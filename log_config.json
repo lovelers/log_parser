@@ -1,0 +1,39 @@
+{
+    "LogCmd" : [
+        "logcat -v threadtime",
+        "logcat -v time",
+        "logcat -b radio -v time",
+        "logcat -b events -v time",
+        "cat /proc/kmsg"
+    ],
+    "LogItem" : [
+        {
+            "key" : "Date",
+            "width" : 50
+        },
+        {
+            "key" : "Time",
+            "width" : 50
+        },
+        {
+            "key" : "Level",
+            "width" : 30
+        },
+        {
+            "key" : "Pid",
+            "width" : 30
+        },
+        {
+            "key" : "Tid",
+            "width" : 30
+        },
+        {
+            "key" : "Tag",
+            "width" : 100
+        },
+        {
+            "key" : "msg",
+            "width" : 1000
+        }
+    ]
+}
