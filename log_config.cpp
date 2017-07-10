@@ -5,6 +5,9 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDebug>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>>
 
 log_config::log_config()
 {
@@ -40,6 +43,7 @@ QVector<QString> log_config::processPerLine(const QString &&str, cmd_type type){
     int delimiter = -1;
     switch (type) {
     case LOGCAT_THREADTIME:
+#if 0
         logItem.append(str.mid(0, 5)); //Date
         logItem.append(str.mid(6,12)); //Time
         logItem.append(str.mid(19,1)); //Level
@@ -48,6 +52,17 @@ QVector<QString> log_config::processPerLine(const QString &&str, cmd_type type){
         delimiter = str.indexOf(QChar(':'), 39);
         logItem.append(str.mid(39, delimiter-39)); // Tag
         logItem.append(str.mid(delimiter+1).simplified()); //msg
+#else
+        logItem.append(str.mid(0, 5)); //Date
+        logItem.append(str.mid(6,12)); //Time
+        logItem.append(str.mid(31,1)); //Level
+        logItem.append(str.mid(19,5)); //Pid
+        logItem.append(str.mid(25,5)); //Tid
+
+        delimiter = str.indexOf(QChar(':'), 33);
+        logItem.append(str.mid(33, delimiter-33)); // Tag
+        logItem.append(str.mid(delimiter+1).simplified()); //msg
+#endif
         break;
     default:
         break;

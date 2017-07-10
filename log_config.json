@@ -9,11 +9,11 @@
     "LogItem" : [
         {
             "key" : "Date",
-            "width" : 50
+            "width" : 40
         },
         {
             "key" : "Time",
-            "width" : 50
+            "width" : 80
         },
         {
             "key" : "Level",
@@ -21,11 +21,11 @@
         },
         {
             "key" : "Pid",
-            "width" : 30
+            "width" : 40
         },
         {
             "key" : "Tid",
-            "width" : 30
+            "width" : 40
         },
         {
             "key" : "Tag",

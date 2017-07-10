@@ -10,6 +10,7 @@
 #include <QTextStream>
 #include <QDebug>
 #include <QThread>
+#include <QObject>
 class log_parser {
 private:
     Ui::MainWindow *ui;
@@ -17,9 +18,10 @@ private:
     QVector<QVector<QString>> m_logdata;
 
     class log_load_thread : public QThread {
-
     public:
-        log_load_thread(QString &filename, log_config* logConfig, QVector<QVector<QString>> *logData) {
+        log_load_thread(QString &filename, log_config* logConfig, QVector<QVector<QString>> *logData)
+        //    :QThread(this)
+        {
             this->filename = filename;
             this->logConfig = logConfig;
             this->logData = logData;
