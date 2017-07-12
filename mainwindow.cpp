@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "qdebug.h"
-#include "log_parser_widget.h"
+#include "log_spreadsheet.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -11,10 +11,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    m_logParser = new log_parser(ui);
+    m_spreadsheet = new log_spreadsheet(ui->TableWidget);
 #if 0
     m_afDebugger = new af_debugger();
 #endif
+
+    QWidget::showMaximized();
 }
 
 MainWindow::~MainWindow()
@@ -29,7 +31,7 @@ void MainWindow::openLog(){
         qDebug() << "file is empty()" << endl;
         return;
     }
-    m_logParser->processLog(filename);
+    m_spreadsheet->processLog(filename);
 }
 
 void MainWindow::adbConnect() {
@@ -65,14 +67,107 @@ void MainWindow::myExit() {
 
 void MainWindow::myShow() {
     this->show();
-    if (m_logParser == NULL ||
-            m_logParser->checkConfigValid() == false) {
+    if (m_spreadsheet == NULL ||
+            m_spreadsheet->checkConfigValid() == false) {
         QMessageBox::about(this, tr("check json file failed"),
                                     tr("please make sure the log cofing json file locate in the correct position and is valid"));
         this->close();
     }
 }
 
-void MainWindow::logFilterOnClick() {
-    m_logParser->logFilterOnClick();
+void MainWindow::logFilterOKClicked() {
+    log_filter_t filter;
+    filter.msg = ui->msg_combobox->currentText();
+
+    // remove the duplicate items
+    QStringList list;
+    list.append(filter.msg);
+    for (int i = 0; i < ui->msg_combobox->count(); ++i) {
+        QString msg = ui->msg_combobox->itemText(i);
+        if (list.contains(msg)) continue;
+        list.append(msg);
+    }
+    ui->msg_combobox->clear();
+    ui->msg_combobox->addItems(list);
+
+    qDebug() << "list = " << list << endl;
+    filter.tag = ui->tag_edit->text();
+    filter.pid = ui->pid_edit->text();
+    filter.tid = ui->tid_edit->text();
+    //filter.line = ui->line_edit->text().toInt();
+    qDebug() << "filter info: " << filter.msg << filter.tag << filter.pid << filter.tid << filter.line << endl;
+
+    m_spreadsheet->processFilter(filter);
+}
+void MainWindow::logFilterClearClicked() {
+    ui->msg_combobox->clearEditText();
+    ui->tag_edit->clear();
+    ui->pid_edit->clear();
+    ui->tid_edit->clear();
+    //ui->line_edit->clear();
+}
+
+void MainWindow::date_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setColumnVisible(TABLE_COL_TYPE_DATE, clicked);
+}
+
+void MainWindow::time_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setColumnVisible(TABLE_COL_TYPE_TIME, clicked);
+}
+
+void MainWindow::pid_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setColumnVisible(TABLE_COL_TYPE_PID, clicked);
+}
+
+void MainWindow::tid_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setColumnVisible(TABLE_COL_TYPE_TID, clicked);
+}
+
+void MainWindow::level_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setColumnVisible(TABLE_COL_TYPE_LEVEL, clicked);
+}
+
+void MainWindow::tag_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setColumnVisible(TABLE_COL_TYPE_TAG, clicked);
+}
+
+void MainWindow::msg_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setColumnVisible(TABLE_COL_TYPE_MSG, clicked);
+}
+
+void MainWindow::info_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setLogLevelVisible(LOG_LEVEL_INFO, clicked);
+}
+
+void MainWindow::debug_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setLogLevelVisible(LOG_LEVEL_DEBUG, clicked);
+}
+
+void MainWindow::verbose_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setLogLevelVisible(LOG_LEVEL_VERBOSE, clicked);
+}
+
+void MainWindow::warn_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setLogLevelVisible(LOG_LEVEL_WARN, clicked);
+}
+
+void MainWindow::error_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setLogLevelVisible(LOG_LEVEL_ERROR, clicked);
+}
+
+void MainWindow::fatal_cb_checked(bool clicked) {
+    qDebug("%s, clicked : %d", __func__,clicked);
+    m_spreadsheet->setLogLevelVisible(LOG_LEVEL_FATAL, clicked);
 }

@@ -3,8 +3,7 @@
 
 #include <QMainWindow>
 #include <QDialog>
-//#include "af_debugger.h"
-class log_parser;
+#include "log_spreadsheet.h"
 namespace Ui {
 class MainWindow;
 }
@@ -21,7 +20,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    log_parser *m_logParser;
+    log_spreadsheet *m_spreadsheet;
     //af_debugger *m_afDebugger;
 
 
@@ -38,7 +37,25 @@ public Q_SLOTS:
     void version();
 
     // log filter
-    void logFilterOnClick();
+    void logFilterOKClicked();
+    void logFilterClearClicked();
+
+    // log columns
+    void date_cb_checked(bool clicked);
+    void time_cb_checked(bool clicked);
+    void pid_cb_checked(bool clicked);
+    void tid_cb_checked(bool clicked);
+    void tag_cb_checked(bool checked);
+    void level_cb_checked(bool checked);
+    void msg_cb_checked(bool checked);
+
+    // log levels
+    void info_cb_checked(bool clicked);
+    void debug_cb_checked(bool clicked);
+    void verbose_cb_checked(bool clicked);
+    void warn_cb_checked(bool clicked);
+    void error_cb_checked(bool clicked);
+    void fatal_cb_checked(bool clicked);
 };
 
 #endif // MAINWINDOW_H

@@ -7,7 +7,7 @@
 #include <QDebug>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
-#include <QRegularExpressionMatchIterator>>
+#include <QRegularExpressionMatchIterator>
 
 log_config::log_config()
 {

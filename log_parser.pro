@@ -27,13 +27,13 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     log_config.cpp \
-    log_parser_widget.cpp \
+    log_spreadsheet.cpp
 
 HEADERS += \
         mainwindow.h \
     config.h \
-    log_parser_widget.h \
     log_config.h \
+    log_spreadsheet.h
 
 FORMS += \
         mainwindow.ui \
