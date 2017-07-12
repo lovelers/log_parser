@@ -19,15 +19,16 @@ log_spreadsheet::log_spreadsheet(QTableWidget *table) {
         int size = keys.size();
         m_table->setColumnCount(size);
         for (int i = 0; i < keys.size(); ++i) {
-
             QTableWidgetItem *item = new QTableWidgetItem(keys.at(i));
             item->setTextAlignment(Qt::AlignLeft);
+            //item->setFlags();
             m_table->setHorizontalHeaderItem(i, item);
             qDebug() << "log_spreadsheet = " << widths.at(i) << endl;
             m_table->setColumnWidth(i, widths.at(i));
         }
 
     }
+    m_table->setRowCount(100);
     m_column_visible = 0xffff; // all the column are visible default
     m_level_visible = 0xffff; // all the log level are visible default
 }
