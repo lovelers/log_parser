@@ -1,5 +1,5 @@
-#ifndef LOG_SPREADSHEET_H
-#define LOG_SPREADSHEET_H
+#ifndef table_controller_H
+#define table_controller_H
 
 
 #include "log_config.h"
@@ -11,26 +11,9 @@
 #include <QObject>
 #include <QWidget>
 #include <QTableWidget>
+#include "table_model.h"
+#include "table_item_delegate.h"
 
-typedef enum {
-    TABLE_COL_TYPE_DATE=0,
-    TABLE_COL_TYPE_TIME,
-    TABLE_COL_TYPE_LEVEL,
-    TABLE_COL_TYPE_PID,
-    TABLE_COL_TYPE_TID,
-    TABLE_COL_TYPE_TAG,
-    TABLE_COL_TYPE_MSG
-} TABLE_COL_TYPE;
-
-typedef enum {
-    LOG_LEVEL_INFO = 0,
-    LOG_LEVEL_VERBOSE,
-    LOG_LEVEL_WARN,
-    LOG_LEVEL_DEBUG,
-    LOG_LEVEL_ERROR,
-    LOG_LEVEL_FATAL,
-    LOG_LEVEL_MAX,
-} LOG_LEVEL;
 
 typedef struct {
     QString msg;
@@ -40,10 +23,12 @@ typedef struct {
     qint32 line;
 } log_filter_t;
 
-class log_spreadsheet {
+class table_controller {
 private:
-    QTableWidget *m_table;
+    QTableView *m_view;
+    table_model *m_model;
     log_config *m_logConfig;
+    table_item_delegate *m_delegate;
     QVector<QVector<QString>> m_logdata;
 
     qint32 m_column_visible;
@@ -93,7 +78,7 @@ private:
     inline bool isMsgMatched(const QString &str, const QStringList &msgList);
     inline bool isFilterMatched(const QVector<QString> &vec, const QStringList & list);
 public:
-    explicit log_spreadsheet(QTableWidget *table);
+    explicit table_controller(QTableView *table);
     bool checkConfigValid();
     bool processLog(QString &filename);
 
@@ -105,4 +90,4 @@ public:
     void showAllLogs();
 };
 
-#endif // LOG_SPREADSHEET_H
+#endif // table_controller_H

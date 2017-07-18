@@ -3,7 +3,8 @@
 
 #include <QMainWindow>
 #include <QDialog>
-#include "log_spreadsheet.h"
+#include "table_controller.h"
+#include "table_model.h"
 namespace Ui {
 class MainWindow;
 }
@@ -20,7 +21,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    log_spreadsheet *m_spreadsheet;
+    table_controller *m_tablectrl;
+    table_model *m_model;
     //af_debugger *m_afDebugger;
 
 

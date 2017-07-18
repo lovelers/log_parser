@@ -1,4 +1,4 @@
-#include "log_spreadsheet.h"
+#include "table_controller.h"
 #include <QFile>
 #include <QTime>
 #include <QTextStream>
@@ -8,36 +8,31 @@
 #include <QThread>
 #include <QHeaderView>
 
-log_spreadsheet::log_spreadsheet(QTableWidget *table) {
-
-    m_table = table;
+table_controller::table_controller(QTableView *view) {
     m_logConfig = log_config::getInstance();
+    m_view = view;
+    m_model = new table_model();
+    m_delegate = new table_item_delegate();
+    m_view->setModel(m_model);
+    m_view->setItemDelegate(m_delegate);
     if (m_logConfig->isConfigValid()) {
         const QVector<QString> &keys = m_logConfig->getKeys();
         const QVector<qint16> &widths = m_logConfig->getWidths();
 
         int size = keys.size();
-        m_table->setColumnCount(size);
         for (int i = 0; i < keys.size(); ++i) {
-            QTableWidgetItem *item = new QTableWidgetItem(keys.at(i));
-            item->setTextAlignment(Qt::AlignLeft);
-            //item->setFlags();
-            m_table->setHorizontalHeaderItem(i, item);
-            qDebug() << "log_spreadsheet = " << widths.at(i) << endl;
-            m_table->setColumnWidth(i, widths.at(i));
+            m_view->setColumnWidth(i, widths.at(i));
         }
-
     }
-    m_table->setRowCount(100);
     m_column_visible = 0xffff; // all the column are visible default
     m_level_visible = 0xffff; // all the log level are visible default
 }
 
-bool log_spreadsheet::checkConfigValid() {
+bool table_controller::checkConfigValid() {
     return m_logConfig->isConfigValid();
 }
 
-bool log_spreadsheet::processLog(QString &filename) {
+bool table_controller::processLog(QString &filename) {
     qDebug() << "file = " << filename << endl;
     m_logdata.clear();
 
@@ -47,60 +42,21 @@ bool log_spreadsheet::processLog(QString &filename) {
     stime.start();
     log_load_thread * thread = new log_load_thread(filename, m_logConfig, &m_logdata);
     thread->start();
-#if 1
+
     /* here we need reserved as much as possible.
      * to avoid the thread access qvector segementfalut issue.
      * the setItem, malloc may crash randomly with the thread
      * root cause should be the vector alloc/access will make the copy failed.
      */
     m_logdata.reserve(500000);
-
-    m_table->clearContents();
-    int col = m_table->columnCount();
-    while (thread->isRunning() ||
-           (thread->isFinished() && idx < m_logdata.size())) {
-        QThread::msleep(3);
-        int i = idx;
-        int new_idx = m_logdata.size();
-        m_table->setRowCount(new_idx + 1);
-        for (;i < new_idx; ++i) {
-            /* previous here is the copy function with QVector<QString> vec = m_logdata.at(i),
-             * it will make the temporay variable cost too much time to slower the performance.
-             */
-            const QVector<QString> &vec = m_logdata.at(i);
-            for (int j = 0; j < col; ++j) {
-                if (vec.at(j).isEmpty() || vec.at(j).isNull()) {
-                    qDebug() << "is Empty, i = " << i << "j = " << j << endl;
-                } else {
-                    m_table->setItem(i, j, new QTableWidgetItem(vec.at(j)));
-                }
-            }
-        }
-        idx = new_idx;
-    }
-#else
     thread->wait();
-    tableWidget->setRowCount(m_logdata.size()+1);//m_logdata.size());
-    for (int i = 0; i < m_logdata.size(); ++i) {
-        QVector<QString> vec = m_logdata.at(i);
-        if ( i %1000 == 0) QThread::msleep(3);
-        for (int j = 0; j < vec.size(); ++j) {
-            if (vec.at(j).isEmpty() || vec.at(j).isNull()) {
-                qDebug() << "is Empty, i = " << i << "j = " << j << endl;
-             } else {
-                tableWidget->setItem(i, j, new QTableWidgetItem(vec.at(j)));
-            }
-        }
-    }
-    //tableWidget->setRowCount(m_logdata.size() + 1);
-
-#endif
+    m_model->updateLogData(m_logdata);
     thread->destroyed();
     qDebug() << "total log process diff time" << stime.elapsed() << "ms" << endl;
     return true;
 }
 
-void log_spreadsheet::setColumnVisible(TABLE_COL_TYPE type, bool visible){
+void table_controller::setColumnVisible(TABLE_COL_TYPE type, bool visible){
     int isVisible = m_column_visible & (1 << type);
     qDebug("type = %d, isVisible = %d", type, isVisible);
     if (isVisible == 0 && visible == true) {
@@ -112,11 +68,11 @@ void log_spreadsheet::setColumnVisible(TABLE_COL_TYPE type, bool visible){
     }
 }
 
-void log_spreadsheet::updateColumnVisible(TABLE_COL_TYPE type, bool visible) {
-    m_table->setColumnHidden(type, !visible);
+void table_controller::updateColumnVisible(TABLE_COL_TYPE type, bool visible) {
+    m_view->setColumnHidden(type, !visible);
 }
 
-void log_spreadsheet::setLogLevelVisible(LOG_LEVEL level, bool visible) {
+void table_controller::setLogLevelVisible(LOG_LEVEL level, bool visible) {
     int cur_level = m_level_visible & (1 << level);
     qDebug("cur_level = %d, isVisible = %d", cur_level, visible);
     if (cur_level == 0 && visible == true) {
@@ -128,41 +84,13 @@ void log_spreadsheet::setLogLevelVisible(LOG_LEVEL level, bool visible) {
     }
 }
 
-void log_spreadsheet::updateLogLevelVisible() {
+void table_controller::updateLogLevelVisible() {
     QTime stime;
     stime.start();
-#if 0
-    //here the setRowHidden's performance is very slow.
-    QTableWidgetItem *item;
-    int row = m_table->rowCount();
-    for(int i = 0;i < row; ++i) {
-        item = m_table->item(i, TABLE_COL_TYPE_LEVEL);
-        if (item) {
-            if (item->text().compare(tag) ==0) {
-                 m_table->setRowHidden(i, hideden);
-            }
-        } else {
-            qDebug("bad row: %d", i);
-        }
-    }
-#else
-    m_table->clearContents();
     int row = m_logdata.size();
-    int col = m_table->columnCount();
-    m_table->setRowCount(row);
-    int row_index = 0;
     for (int i = 0; i < row; ++i) {
-        const QVector<QString> &vec = m_logdata.at(i);
-        if (isLevelVisible(vec.at(TABLE_COL_TYPE_LEVEL))) {
-            //m_table->setVerticalHeaderItem(row_index, new QTableWidgetItem(QString::number(row_index)));
-            for (int j = 0; j < col; ++j) {
-                m_table->setItem(row_index, j, new QTableWidgetItem(vec.at(j)));
-            }
-            ++row_index;
-        }
+        m_view->setRowHidden(i, !isLevelVisible(m_logdata.at(i).at(TABLE_COL_TYPE_LEVEL)));
     }
-    m_table->setRowCount(row_index+1);
-#endif
     qDebug() << "row hidden time diff: " << stime.elapsed() << endl;
 }
 
@@ -170,7 +98,7 @@ const QString g_log_level[LOG_LEVEL_MAX] = {
     "I", "V", "W", "D", "E", "F"
 };
 
-bool log_spreadsheet::isLevelVisible(const QString &leve) {
+bool table_controller::isLevelVisible(const QString &leve) {
     if (leve.isEmpty()) {
         qDebug() << "isEmpty" << endl;
         return true;
@@ -184,7 +112,7 @@ bool log_spreadsheet::isLevelVisible(const QString &leve) {
     return false;
 }
 
-void log_spreadsheet::processFilter(const log_filter_t& filter) {
+void table_controller::processFilter(const log_filter_t& filter) {
     if (m_logdata.isEmpty()) return;
 
     //msg filter check
@@ -204,12 +132,9 @@ void log_spreadsheet::processFilter(const log_filter_t& filter) {
             }
         }
     }
-    qDebug() << "msg filter =" << filter.msg << "list = " << msgList << endl;
-    m_table->clearContents();
+
     int row = m_logdata.size();
-    int col = m_table->columnCount();
-    m_table->setRowCount(row);
-    int row_index = 0;
+    qDebug() << "msg filter =" << filter.msg << "list = " << msgList << "row = " << row << endl;
     for (int i = 0; i < row; ++i) {
         const QVector<QString> &vec = m_logdata.at(i);
         //qDebug() << "row_index" << row_index << endl;
@@ -218,17 +143,18 @@ void log_spreadsheet::processFilter(const log_filter_t& filter) {
                 && isPidMatched(vec.at(TABLE_COL_TYPE_PID), filter.pid)
                 && isTagMatched(vec.at(TABLE_COL_TYPE_TAG), filter.tag)
                 && isMsgMatched(vec.at(TABLE_COL_TYPE_MSG), msgList)) {
-            for (int j = 0; j < col; ++j) {
-                m_table->setItem(row_index, j, new QTableWidgetItem(vec.at(j)));
-            }
-            ++row_index;
+
+            m_view->setRowHidden(i, false);
+        } else {
+            m_view->setRowHidden(i, true);
         }
     }
-    m_table->setRowCount(row_index+1);
+    m_delegate->updateMsgFilter(msgList);
+
 }
 
 
-bool log_spreadsheet::isTidMatched(const QString &str, const QString &tid) {
+bool table_controller::isTidMatched(const QString &str, const QString &tid) {
     if (tid.isEmpty()) return true;// if the tid is empty, skip match it
     if (str.isEmpty()) return false; // if the str is empty, remove it.
 
@@ -239,7 +165,7 @@ bool log_spreadsheet::isTidMatched(const QString &str, const QString &tid) {
     }
 }
 
-bool log_spreadsheet::isPidMatched(const QString &str, const QString &pid) {
+bool table_controller::isPidMatched(const QString &str, const QString &pid) {
     if (pid.isEmpty()) return true;// if the pid is empty, skip match it
     if (str.isEmpty()) return false; // if the str is empty, remove it.
 
@@ -250,7 +176,7 @@ bool log_spreadsheet::isPidMatched(const QString &str, const QString &pid) {
     }
 }
 
-bool log_spreadsheet::isTagMatched(const QString &str, const QString &tag) {
+bool table_controller::isTagMatched(const QString &str, const QString &tag) {
     if (tag.isEmpty()) return true;// if the tag is empty, skip match it.
     if (str.isEmpty()) return false; // if the str is empty, remove it.
 
@@ -261,7 +187,7 @@ bool log_spreadsheet::isTagMatched(const QString &str, const QString &tag) {
     }
 }
 
-bool log_spreadsheet::isMsgMatched(const QString& str, const QStringList& list) {
+bool table_controller::isMsgMatched(const QString& str, const QStringList& list) {
     if (list.isEmpty()) return true; // if the msglist is empty, skip match it.
     if (str.isEmpty()) return false; // if the str is empty, remove it.
     for (int i = 0; i < list.size(); ++i) {
@@ -271,15 +197,9 @@ bool log_spreadsheet::isMsgMatched(const QString& str, const QStringList& list) 
     return false;
 }
 
-void log_spreadsheet::showAllLogs() {
-    if (m_logdata.isEmpty()) return;
-    m_table->clearContents();
+void table_controller::showAllLogs() {
     int row = m_logdata.size();
-    int col = m_table->columnCount();
-    m_table->setRowCount(row);
     for (int i = 0; i < row; i++) {
-        for (int j = 0; j < col; ++j) {
-            m_table->setItem(i, j, new QTableWidgetItem(m_logdata.at(i).at(j)));
-        }
+        m_view->showRow(i);
     }
 }

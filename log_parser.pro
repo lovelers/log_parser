@@ -27,13 +27,17 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     log_config.cpp \
-    log_spreadsheet.cpp
+    table_model.cpp \
+    table_controller.cpp \
+    table_item_delegate.cpp
 
 HEADERS += \
         mainwindow.h \
     config.h \
     log_config.h \
-    log_spreadsheet.h
+    table_model.h \
+    table_controller.h \
+    table_item_delegate.h
 
 FORMS += \
         mainwindow.ui \

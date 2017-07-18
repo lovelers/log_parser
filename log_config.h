@@ -5,6 +5,27 @@
 
 class log_config;
 
+
+typedef enum {
+    TABLE_COL_TYPE_DATE=0,
+    TABLE_COL_TYPE_TIME,
+    TABLE_COL_TYPE_LEVEL,
+    TABLE_COL_TYPE_PID,
+    TABLE_COL_TYPE_TID,
+    TABLE_COL_TYPE_TAG,
+    TABLE_COL_TYPE_MSG
+} TABLE_COL_TYPE;
+
+typedef enum {
+    LOG_LEVEL_INFO = 0,
+    LOG_LEVEL_VERBOSE,
+    LOG_LEVEL_WARN,
+    LOG_LEVEL_DEBUG,
+    LOG_LEVEL_ERROR,
+    LOG_LEVEL_FATAL,
+    LOG_LEVEL_MAX,
+} LOG_LEVEL;
+
 static log_config *g_logConfig = NULL;
 class log_config
 {
