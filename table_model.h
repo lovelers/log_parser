@@ -14,10 +14,17 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-    void updateLogData(const QVector<QVector<QString>> &data);
+    void setLogData(const QVector<QVector<QString>> &data);
+    void appendLogData(const QVector<QString> &data);
+    void clearData();
+    QVector<QVector<QString>> * getLogDataPtr();
+    void setLogFilterData(const QVector<QVector<QString>> &data, const QVector<qint32> &line_info);
+    void appendLogFilterData(const QVector<QString> &data, int line);
 private:
     log_config *m_log_config;
     QVector<QVector<QString>> log_data;
+    QVector<QVector<QString>> filter_data;
+    QVector<qint32> filter_line_info;
 };
 
 #endif // TABLE_MODEL_H

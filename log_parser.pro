@@ -29,7 +29,8 @@ SOURCES += \
     log_config.cpp \
     table_model.cpp \
     table_controller.cpp \
-    table_item_delegate.cpp
+    table_item_delegate.cpp \
+    adb_online.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -37,7 +38,8 @@ HEADERS += \
     log_config.h \
     table_model.h \
     table_controller.h \
-    table_item_delegate.h
+    table_item_delegate.h \
+    adb_online.h
 
 FORMS += \
         mainwindow.ui \

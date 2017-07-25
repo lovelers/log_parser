@@ -20,7 +20,7 @@ table_controller::table_controller(QTableView *view) {
         const QVector<qint16> &widths = m_logConfig->getWidths();
 
         int size = keys.size();
-        for (int i = 0; i < keys.size(); ++i) {
+        for (int i = 0; i < size; ++i) {
             m_view->setColumnWidth(i, widths.at(i));
         }
     }
@@ -33,25 +33,33 @@ bool table_controller::checkConfigValid() {
 }
 
 bool table_controller::processLog(QString &filename) {
-    qDebug() << "file = " << filename << endl;
-    m_logdata.clear();
-
-
-    volatile int idx = 0;
+    qDebug()<< "filename = " << filename << endl;
     QTime stime;
     stime.start();
-    log_load_thread * thread = new log_load_thread(filename, m_logConfig, &m_logdata);
-    thread->start();
+    QFile *file = new QFile(filename);
 
-    /* here we need reserved as much as possible.
-     * to avoid the thread access qvector segementfalut issue.
-     * the setItem, malloc may crash randomly with the thread
-     * root cause should be the vector alloc/access will make the copy failed.
-     */
-    m_logdata.reserve(500000);
-    thread->wait();
-    m_model->updateLogData(m_logdata);
-    thread->destroyed();
+    QVector<QVector<QString>> logData;
+    QVector<QVector<QString>> filterData;
+    QVector<qint32> filterLine;
+
+    QVector<QString> tmp;
+    logData.reserve(500000);
+    if (file->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(file);
+        while (!in.atEnd()) {
+            tmp = m_logConfig->processPerLine(in.readLine());
+            if (isFilterMatched(tmp)) {
+                filterData.append(tmp);
+                filterLine.append(logData.size());
+            }
+            logData.append(tmp);
+        }
+        file->close();
+    } else {
+        qDebug() << "open file failed" << endl;
+    }
+    m_model->setLogData(logData);
+    m_model->setLogFilterData(filterData, filterLine);
     qDebug() << "total log process diff time" << stime.elapsed() << "ms" << endl;
     return true;
 }
@@ -87,9 +95,10 @@ void table_controller::setLogLevelVisible(LOG_LEVEL level, bool visible) {
 void table_controller::updateLogLevelVisible() {
     QTime stime;
     stime.start();
-    int row = m_logdata.size();
+    QVector<QVector<QString>> *logData = m_model->getLogDataPtr();
+    int row = logData->size();
     for (int i = 0; i < row; ++i) {
-        m_view->setRowHidden(i, !isLevelVisible(m_logdata.at(i).at(TABLE_COL_TYPE_LEVEL)));
+        m_view->setRowHidden(i, !isLevelVisible(logData->at(i).at(TABLE_COL_TYPE_LEVEL)));
     }
     qDebug() << "row hidden time diff: " << stime.elapsed() << endl;
 }
@@ -113,93 +122,96 @@ bool table_controller::isLevelVisible(const QString &leve) {
 }
 
 void table_controller::processFilter(const log_filter_t& filter) {
-    if (m_logdata.isEmpty()) return;
+    m_log_filter = filter;
 
-    //msg filter check
-    QStringList msgList;
+    QVector<QVector<QString>> *logData = m_model->getLogDataPtr();
+    if (logData->isEmpty()) return;
 
-    if (!filter.msg.isEmpty()) {
-        int index= 0;
-        int start_offset = 0;
-        while (true) {
-            index = filter.msg.indexOf("|", start_offset);
-            if (index == -1) {
-                msgList.append(filter.msg.mid(start_offset, -1));
-                break;
-            } else {
-                msgList.append(filter.msg.mid(start_offset, index - start_offset));
-                start_offset = index+1;
-            }
-        }
-    }
-
-    int row = m_logdata.size();
-    qDebug() << "msg filter =" << filter.msg << "list = " << msgList << "row = " << row << endl;
+    QVector<QVector<QString>> filterData;
+    QVector<qint32> filterLine;
+    int row = logData->size();
+    qDebug() << "row = " << row << endl;
+    QTime stime;
+    stime.start();
     for (int i = 0; i < row; ++i) {
-        const QVector<QString> &vec = m_logdata.at(i);
+        const QVector<QString> &vec = logData->at(i);
         //qDebug() << "row_index" << row_index << endl;
         if (isLevelVisible(vec.at(TABLE_COL_TYPE_LEVEL))
-                && isTidMatched(vec.at(TABLE_COL_TYPE_TID), filter.tid)
-                && isPidMatched(vec.at(TABLE_COL_TYPE_PID), filter.pid)
-                && isTagMatched(vec.at(TABLE_COL_TYPE_TAG), filter.tag)
-                && isMsgMatched(vec.at(TABLE_COL_TYPE_MSG), msgList)) {
-
-            m_view->setRowHidden(i, false);
+                && isFilterMatched(vec)) {
+            filterData.append(vec);
+            filterLine.append(i);
         } else {
-            m_view->setRowHidden(i, true);
+            //m_view->setRowHidden(i, true);
         }
     }
-    m_delegate->updateMsgFilter(msgList);
-
+    m_model->setLogFilterData(filterData, filterLine);
+    m_delegate->updateMsgFilter(m_log_filter.msg);
+    qDebug() << "filter time diff " << stime.elapsed();
 }
 
 
-bool table_controller::isTidMatched(const QString &str, const QString &tid) {
-    if (tid.isEmpty()) return true;// if the tid is empty, skip match it
-    if (str.isEmpty()) return false; // if the str is empty, remove it.
+bool table_controller::isFilterMatched(const QVector<QString> &str) {
 
-    if (str.indexOf(tid) == -1) {
-        return false;
-    } else {
+    if (m_log_filter.tid.isEmpty() &&
+            m_log_filter.pid.isEmpty()&&
+            m_log_filter.tag.isEmpty()&&
+            m_log_filter.msg.isEmpty()) {
+        return true; // indicate no need filter.
+    }
+
+    if (!m_log_filter.tid.isEmpty()
+            && str.at(TABLE_COL_TYPE_TID).indexOf(m_log_filter.tid) != -1) {
         return true;
     }
-}
 
-bool table_controller::isPidMatched(const QString &str, const QString &pid) {
-    if (pid.isEmpty()) return true;// if the pid is empty, skip match it
-    if (str.isEmpty()) return false; // if the str is empty, remove it.
-
-    if (str.indexOf(pid) == -1) {
-        return false;
-    } else {
+    if (!m_log_filter.pid.isEmpty()
+            && str.at(TABLE_COL_TYPE_PID).indexOf(m_log_filter.pid) != -1) {
         return true;
     }
-}
 
-bool table_controller::isTagMatched(const QString &str, const QString &tag) {
-    if (tag.isEmpty()) return true;// if the tag is empty, skip match it.
-    if (str.isEmpty()) return false; // if the str is empty, remove it.
-
-    if (str.indexOf(tag) == -1) {
-        return false;
-    } else {
+    if (!m_log_filter.tag.isEmpty()
+            && str.at(TABLE_COL_TYPE_TAG).indexOf(m_log_filter.tag) != -1) {
         return true;
     }
-}
 
-bool table_controller::isMsgMatched(const QString& str, const QStringList& list) {
-    if (list.isEmpty()) return true; // if the msglist is empty, skip match it.
-    if (str.isEmpty()) return false; // if the str is empty, remove it.
-    for (int i = 0; i < list.size(); ++i) {
-        if (str.indexOf(list.at(i)) != -1)
+    for (int i = 0; i < m_log_filter.msg.size(); ++i) {
+        if (str.at(TABLE_COL_TYPE_MSG).indexOf(m_log_filter.msg.at(i)) != -1)
             return true;
     }
     return false;
 }
 
 void table_controller::showAllLogs() {
-    int row = m_logdata.size();
+    int row = m_model->getLogDataPtr()->size();
     for (int i = 0; i < row; i++) {
         m_view->showRow(i);
     }
+}
+
+void table_controller::processLogOnline(const QByteArray &bArray) {
+    //qDebug() << bArray;
+    QVector<QString> vec = m_logConfig->processPerLine(bArray);
+    if (isFilterMatched(vec)) {
+        m_model->appendLogFilterData(vec, m_model->getLogDataPtr()->size());
+    }
+    m_model->appendLogData(vec);
+}
+
+void table_controller::android_run() {
+    m_model->clearData();
+}
+
+void table_controller::android_resume() {
+    //
+}
+
+void table_controller::android_pause() {
+}
+
+void table_controller::android_stop() {
+    //
+}
+
+void table_controller::android_clear() {
+    m_model->clearData();
 }

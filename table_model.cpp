@@ -4,18 +4,11 @@ table_model::table_model(QObject *parent):
     QAbstractTableModel(parent)
 {
     m_log_config = log_config::getInstance();
-#if 0
-    for (int i = 0; i < 100000; ++i) {
-        QStringList list;
-        list << "hello" << "world" << "asdfasdf" << "asdfsdf" << "12" << "24" << "34";
-        log_data.append(list);
-    }
-#endif
 }
 
 int table_model::rowCount(const QModelIndex &parent) const {
-    if (log_data.size() < 100) return 100;
-    return log_data.size();
+    //if (filter_data.size() < 100) return 100;
+    return filter_data.size();
 }
 
 int table_model::columnCount(const QModelIndex &parent) const {
@@ -29,7 +22,10 @@ QVariant table_model::headerData(int section, Qt::Orientation orientation, int r
         return m_log_config->getKeys().at(section);
     }
     if (orientation == Qt::Vertical) {
-        return QVariant(section+1);
+        if (filter_line_info.size() < section)
+            return QVariant(-1);
+        else
+            return QVariant(filter_line_info.at(section));
     }
     return QVariant();
 }
@@ -40,11 +36,11 @@ QVariant table_model::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (index.row() >= log_data.size() || index.row() < 0)
+    if (index.row() >= filter_data.size() || index.row() < 0)
         return QVariant();
 
     if (role == Qt::DisplayRole) {
-        return  log_data.at(index.row()).at(index.column());
+        return  filter_data.at(index.row()).at(index.column());
     }
     return QVariant();
 }
@@ -61,8 +57,39 @@ bool table_model::setData(const QModelIndex &index, const QVariant &value, int r
     return false;
 }
 
-void table_model::updateLogData(const QVector<QVector<QString>> &data) {
+void table_model::appendLogData(const QVector<QString> &data) {
     this->beginResetModel();
+    log_data.append(data);
+    this->endResetModel();
+}
+
+void table_model::setLogData(const QVector<QVector<QString>> &data) {
     log_data = data;
+}
+
+void table_model::clearData() {
+    log_data.clear();
+    this->beginResetModel();
+    filter_data.clear();
+    filter_line_info.clear();
+    this->endResetModel();
+}
+
+QVector<QVector<QString>> * table_model::getLogDataPtr() {
+    return &log_data;
+}
+
+void table_model::setLogFilterData(const QVector<QVector<QString>> &data,
+                                   const QVector<qint32> &line_info) {
+    this->beginResetModel();
+    filter_data = data;
+    filter_line_info = line_info;
+    this->endResetModel();
+}
+
+void table_model::appendLogFilterData(const QVector<QString> &data, int line) {
+    this->beginResetModel();
+    filter_data.append(data);
+    filter_line_info.append(line);
     this->endResetModel();
 }

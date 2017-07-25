@@ -5,6 +5,7 @@
 #include <QDialog>
 #include "table_controller.h"
 #include "table_model.h"
+#include "adb_online.h"
 namespace Ui {
 class MainWindow;
 }
@@ -23,6 +24,7 @@ private:
     Ui::MainWindow *ui;
     table_controller *m_tablectrl;
     table_model *m_model;
+    adb_online *m_adb;
     //af_debugger *m_afDebugger;
 
 
@@ -58,6 +60,13 @@ public Q_SLOTS:
     void warn_cb_checked(bool clicked);
     void error_cb_checked(bool clicked);
     void fatal_cb_checked(bool clicked);
+
+    // android devices
+    void android_devices_select();
+    void android_run();
+    void android_pause_resume();
+    void android_stop();
+    void android_clear();
 };
 
 #endif // MAINWINDOW_H

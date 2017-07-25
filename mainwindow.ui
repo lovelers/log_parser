@@ -243,6 +243,18 @@
             <property name="text">
              <string>Clear</string>
             </property>
+            <property name="checkable">
+             <bool>false</bool>
+            </property>
+            <property name="autoDefault">
+             <bool>false</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
            </widget>
            <widget class="QPushButton" name="ok_btn">
             <property name="minimumSize">
@@ -673,7 +685,10 @@
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="1" column="2">
-         <widget class="QPushButton" name="pushButton_5">
+         <widget class="QPushButton" name="android_stop_btn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimumSize">
            <size>
             <width>50</width>
@@ -692,14 +707,17 @@
          </widget>
         </item>
         <item row="0" column="1" colspan="3">
-         <widget class="QComboBox" name="comboBox">
+         <widget class="QComboBox" name="android_devices_cb">
           <property name="editable">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
         </item>
         <item row="1" column="3">
-         <widget class="QPushButton" name="pushButton_6">
+         <widget class="QPushButton" name="android_clear_btn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimumSize">
            <size>
             <width>50</width>
@@ -718,14 +736,14 @@
          </widget>
         </item>
         <item row="0" column="0">
-         <widget class="QPushButton" name="pushButton_7">
+         <widget class="QPushButton" name="android_devices_btn">
           <property name="text">
            <string>Select</string>
           </property>
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QPushButton" name="pushButton_3">
+         <widget class="QPushButton" name="android_run_btn">
           <property name="minimumSize">
            <size>
             <width>50</width>
@@ -744,7 +762,10 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QPushButton" name="pushButton_4">
+         <widget class="QPushButton" name="android_pause_resume_btn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimumSize">
            <size>
             <width>50</width>
@@ -940,14 +961,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>adb_connect</sender>
-   <signal>triggered()</signal>
+   <sender>android_devices_btn</sender>
+   <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>adbConnect()</slot>
+   <slot>android_devices_select()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
+     <x>1084</x>
+     <y>78</y>
     </hint>
     <hint type="destinationlabel">
      <x>539</x>
@@ -1243,6 +1264,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>android_pause_resume_btn</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>android_pause_resume()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1137</x>
+     <y>105</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>639</x>
+     <y>359</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>android_run_btn</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>android_run()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1086</x>
+     <y>105</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>639</x>
+     <y>359</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>android_clear_btn</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>android_clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1239</x>
+     <y>105</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>639</x>
+     <y>359</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>android_stop_btn</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>android_stop()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1188</x>
+     <y>105</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>639</x>
+     <y>359</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>openLog()</slot>
@@ -1266,5 +1351,10 @@
   <slot>error_cb_checked(bool)</slot>
   <slot>fatal_cb_checked(bool)</slot>
   <slot>logFilterClearClicked()</slot>
+  <slot>android_devices_select()</slot>
+  <slot>android_run()</slot>
+  <slot>android_pause_resume()</slot>
+  <slot>android_stop()</slot>
+  <slot>android_clear()</slot>
  </slots>
 </ui>
