@@ -115,6 +115,9 @@
           <property name="duplicatesEnabled">
            <bool>false</bool>
           </property>
+          <property name="modelColumn">
+           <number>0</number>
+          </property>
          </widget>
         </item>
         <item row="1" column="0" colspan="2">
@@ -146,13 +149,13 @@
            <widget class="QLineEdit" name="tag_edit">
             <property name="minimumSize">
              <size>
-              <width>80</width>
+              <width>200</width>
               <height>20</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>80</width>
+              <width>400</width>
               <height>20</height>
              </size>
             </property>
@@ -177,13 +180,13 @@
            <widget class="QLineEdit" name="pid_edit">
             <property name="minimumSize">
              <size>
-              <width>40</width>
+              <width>100</width>
               <height>20</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>40</width>
+              <width>200</width>
               <height>16</height>
              </size>
             </property>
@@ -208,13 +211,13 @@
            <widget class="QLineEdit" name="tid_edit">
             <property name="minimumSize">
              <size>
-              <width>40</width>
+              <width>100</width>
               <height>20</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>40</width>
+              <width>200</width>
               <height>20</height>
              </size>
             </property>
@@ -230,13 +233,13 @@
            <widget class="QPushButton" name="clear_btn">
             <property name="minimumSize">
              <size>
-              <width>50</width>
+              <width>40</width>
               <height>20</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>40</width>
               <height>20</height>
              </size>
             </property>
@@ -254,23 +257,6 @@
             </property>
             <property name="flat">
              <bool>false</bool>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="ok_btn">
-            <property name="minimumSize">
-             <size>
-              <width>50</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>50</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>OK</string>
             </property>
            </widget>
           </widget>
@@ -804,6 +790,9 @@
       <property name="autoFillBackground">
        <bool>false</bool>
       </property>
+      <property name="sizeAdjustPolicy">
+       <enum>QAbstractScrollArea::AdjustIgnored</enum>
+      </property>
       <property name="autoScroll">
        <bool>false</bool>
       </property>
@@ -1225,22 +1214,6 @@
     <hint type="sourcelabel">
      <x>231</x>
      <y>102</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>639</x>
-     <y>359</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ok_btn</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>logFilterOKClicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>593</x>
-     <y>103</y>
     </hint>
     <hint type="destinationlabel">
      <x>639</x>

@@ -41,7 +41,7 @@ public Q_SLOTS:
     void version();
 
     // log filter
-    void logFilterOKClicked();
+    void logFilterReturnPress();
     void logFilterClearClicked();
 
     // log columns
@@ -67,6 +67,8 @@ public Q_SLOTS:
     void android_pause_resume();
     void android_stop();
     void android_clear();
+
+
 };
 
 #endif // MAINWINDOW_H

@@ -13,7 +13,7 @@
 #include <QTableWidget>
 #include "table_model.h"
 #include "table_item_delegate.h"
-
+#include <QTimer>
 
 typedef struct {
     QStringList msg;
@@ -22,6 +22,7 @@ typedef struct {
     QString tid;
     qint32 line;
 } log_filter_t;
+
 
 class table_controller : public QObject {
 
@@ -41,6 +42,8 @@ private:
     void updateColumnVisible(TABLE_COL_TYPE type, bool visible);
     inline bool isLevelVisible(const QString & str);
     bool isFilterMatched(const QVector<QString> &str);
+
+    QTimer *m_scroll_timer;
 public:
     table_controller(QTableView *table);
     bool checkConfigValid();
@@ -60,6 +63,7 @@ public:
     void android_pause();
 public slots:
     void processLogOnline(const QByteArray &bArray);
+    void scrollToBottom();
 };
 
 #endif // table_controller_H

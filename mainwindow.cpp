@@ -17,6 +17,15 @@ MainWindow::MainWindow(QWidget *parent) :
     m_adb = new adb_online();
     QObject::connect(m_adb, SIGNAL(processLogOnline(QByteArray)),
                      m_tablectrl, SLOT(processLogOnline(QByteArray)));
+    QObject::connect(ui->msg_combobox->lineEdit(), SIGNAL(returnPressed()),
+                     this, SLOT(logFilterReturnPress()));
+    QObject::connect(ui->tag_edit, SIGNAL(returnPressed()),
+                     this, SLOT(logFilterReturnPress()));
+    QObject::connect(ui->pid_edit, SIGNAL(returnPressed()),
+                     this, SLOT(logFilterReturnPress()));
+    QObject::connect(ui->tid_edit, SIGNAL(returnPressed()),
+                     this, SLOT(logFilterReturnPress()));
+
     ui->android_stop_btn->setEnabled(false);
     QWidget::showMaximized();
 }
@@ -85,7 +94,7 @@ void MainWindow::myShow() {
     }
 }
 
-void MainWindow::logFilterOKClicked() {
+void MainWindow::logFilterReturnPress() {
     log_filter_t filter;
     QString cur_msg = ui->msg_combobox->currentText();
 
@@ -121,7 +130,7 @@ void MainWindow::logFilterOKClicked() {
     filter.tag = ui->tag_edit->text();
     filter.pid = ui->pid_edit->text();
     filter.tid = ui->tid_edit->text();
-    qDebug() << filter.tag << filter.pid << filter.tid << filter.line << endl;
+    qDebug() << filter.tag << filter.pid << filter.tid;
 
     m_tablectrl->processFilter(filter);
 }

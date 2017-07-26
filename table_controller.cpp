@@ -24,8 +24,13 @@ table_controller::table_controller(QTableView *view) {
             m_view->setColumnWidth(i, widths.at(i));
         }
     }
+    m_scroll_timer = new QTimer(this);
+    QObject::connect(m_scroll_timer, SIGNAL(timeout()),
+                     this, SLOT(scrollToBottom()));
+
     m_column_visible = 0xffff; // all the column are visible default
     m_level_visible = 0xffff; // all the log level are visible default
+
 }
 
 bool table_controller::checkConfigValid() {
@@ -151,7 +156,6 @@ void table_controller::processFilter(const log_filter_t& filter) {
 
 
 bool table_controller::isFilterMatched(const QVector<QString> &str) {
-
     if (m_log_filter.tid.isEmpty() &&
             m_log_filter.pid.isEmpty()&&
             m_log_filter.tag.isEmpty()&&
@@ -159,33 +163,66 @@ bool table_controller::isFilterMatched(const QVector<QString> &str) {
         return true; // indicate no need filter.
     }
 
-    if (!m_log_filter.tid.isEmpty()
-            && str.at(TABLE_COL_TYPE_TID).indexOf(m_log_filter.tid) != -1) {
-        return true;
+    /**
+     * if tid is empty, skipped match, goto next item match.
+     * if tid is not empty, but not match the str. return false.
+     * if tid is not empty, and match the str, goto next item match.
+     **/
+    if (!m_log_filter.tid.isEmpty() &&
+            str.at(TABLE_COL_TYPE_TID).indexOf(m_log_filter.tid) == -1) {
+        return false;
     }
 
-    if (!m_log_filter.pid.isEmpty()
-            && str.at(TABLE_COL_TYPE_PID).indexOf(m_log_filter.pid) != -1) {
-        return true;
+    /**
+     * if pid is empty, skipped match, goto next item match.
+     * if pid is not empty, but not match the str. return false.
+     * if pid is not empty, and match the str, goto next item match.
+     **/
+    if (!m_log_filter.pid.isEmpty() &&
+            str.at(TABLE_COL_TYPE_PID).indexOf(m_log_filter.pid) == -1) {
+        return false;
     }
 
-    if (!m_log_filter.tag.isEmpty()
-            && str.at(TABLE_COL_TYPE_TAG).indexOf(m_log_filter.tag) != -1) {
-        return true;
+    /**
+     * if tag is empty, skipped match, goto next item match.
+     * if tag is not empty, but not match the str. return false.
+     * if tag is not empty, and match the str, goto next item match.
+     **/
+    if ( !m_log_filter.tag.isEmpty()
+            && str.at(TABLE_COL_TYPE_TAG).indexOf(m_log_filter.tag) == -1) {
+        return false;
     }
 
-    for (int i = 0; i < m_log_filter.msg.size(); ++i) {
-        if (str.at(TABLE_COL_TYPE_MSG).indexOf(m_log_filter.msg.at(i)) != -1)
-            return true;
+    /**
+     * if msg is empty, skipp match. and return true.
+     * if msg is not empty, but not match the str, return false.
+     * if msg is not empty, and match the str, return true;
+     **/
+    if (!m_log_filter.msg.isEmpty()) {
+        for (int i = 0; i < m_log_filter.msg.size(); ++i) {
+            if (str.at(TABLE_COL_TYPE_MSG).indexOf(m_log_filter.msg.at(i)) != -1)
+                return true;
+        }
+        return false;
     }
-    return false;
+    return true;
 }
 
 void table_controller::showAllLogs() {
-    int row = m_model->getLogDataPtr()->size();
+     QVector<QVector<QString>> *logData = m_model->getLogDataPtr();
+     QVector<QVector<QString>> filterData;
+     QVector<qint32> filterLine;
+    int row = logData->size();
     for (int i = 0; i < row; i++) {
-        m_view->showRow(i);
+        filterData.append(logData->at(i));
+        filterLine.append(i);
     }
+    m_model->setLogFilterData(filterData, filterLine);
+    m_log_filter.msg.clear();
+    m_log_filter.pid.clear();
+    m_log_filter.tid.clear();
+    m_log_filter.tag.clear();
+    m_delegate->updateMsgFilter(m_log_filter.msg);
 }
 
 void table_controller::processLogOnline(const QByteArray &bArray) {
@@ -199,6 +236,7 @@ void table_controller::processLogOnline(const QByteArray &bArray) {
 
 void table_controller::android_run() {
     m_model->clearData();
+    m_scroll_timer->start(10);
 }
 
 void table_controller::android_resume() {
@@ -206,12 +244,20 @@ void table_controller::android_resume() {
 }
 
 void table_controller::android_pause() {
+
 }
 
 void table_controller::android_stop() {
     //
+    m_scroll_timer->stop();
 }
 
 void table_controller::android_clear() {
     m_model->clearData();
+}
+
+
+
+void table_controller::scrollToBottom() {
+    if (m_view) m_view->scrollToBottom();
 }

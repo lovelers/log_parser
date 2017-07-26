@@ -20,6 +20,9 @@ public:
     QVector<QVector<QString>> * getLogDataPtr();
     void setLogFilterData(const QVector<QVector<QString>> &data, const QVector<qint32> &line_info);
     void appendLogFilterData(const QVector<QString> &data, int line);
+    inline QModelIndex getLastModelIndex() {
+        return this->index(filter_line_info.size(),0);
+    }
 private:
     log_config *m_log_config;
     QVector<QVector<QString>> log_data;

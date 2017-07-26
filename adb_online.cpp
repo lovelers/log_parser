@@ -104,7 +104,7 @@ void adb_online::android_stop() {
 }
 
 void adb_online::android_clear() {
-    android_stop();
+    //android_stop();
     QProcess process;
     process.start("adb", QStringList() << "clear");
     bool finished = process.waitForFinished(1000);
