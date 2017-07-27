@@ -79,6 +79,14 @@ QVector<QVector<QString>> * table_model::getLogDataPtr() {
     return &log_data;
 }
 
+QVector<QVector<QString>> * table_model::getLogFilterData() {
+    return &filter_data;
+}
+
+QVector<qint32> * table_model::getLogFilterLine() {
+    return &filter_line_info;
+}
+
 void table_model::setLogFilterData(const QVector<QVector<QString>> &data,
                                    const QVector<qint32> &line_info) {
     this->beginResetModel();

@@ -23,7 +23,8 @@ public:
     inline QModelIndex getLastModelIndex() {
         return this->index(filter_line_info.size(),0);
     }
-private:
+    QVector<QVector<QString>> *getLogFilterData();
+    QVector<qint32> *getLogFilterLine();
     log_config *m_log_config;
     QVector<QVector<QString>> log_data;
     QVector<QVector<QString>> filter_data;

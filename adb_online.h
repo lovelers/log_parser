@@ -23,9 +23,9 @@ class adb_online : public QObject
 public:
     adb_online();
     ~adb_online();
-    void setOutput(QTextEdit *textEdit);
     void setCmd(UI_CMD_TYPE type);
     QStringList checkDevices();
+    UI_CMD_TYPE getCurType() { return m_curType;}
     class log_load_thread : public QThread {
     public:
         log_load_thread(adb_online *adb);
@@ -48,6 +48,7 @@ private:
     void android_run();
     void android_stop();
     void android_clear();
+    void android_pause();
     void android_resume();
 
 public slots:
@@ -58,6 +59,7 @@ public slots:
 
 signals:
     void processLogOnline(const QByteArray &bArray);
+    void setLogTitle(QString path);
 };
 
 #endif // ADB_ONLINE_H

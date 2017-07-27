@@ -26,7 +26,16 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->tid_edit, SIGNAL(returnPressed()),
                      this, SLOT(logFilterReturnPress()));
 
+    QObject::connect(m_adb, SIGNAL(setLogTitle(QString)),
+                     this, SLOT(setLogTitle(QString)));
+
     ui->android_stop_btn->setEnabled(false);
+
+    m_window_title.append("log parser");
+    this->setWindowTitle(m_window_title);
+
+    QObject::connect(&check_adb_device_tiemr, SIGNAL(timeout()),
+                     this, SLOT(android_devices_select()));
     QWidget::showMaximized();
 }
 
@@ -45,12 +54,15 @@ MainWindow::~MainWindow()
 
 void MainWindow::openLog(){
     qDebug() << "openLog" << endl;
+    this->android_stop();
     QString filename = QFileDialog::getOpenFileName(this, tr("open log"), ".", tr("log file (*.txt *.log)"));
     if (filename.isEmpty()) {
         qDebug() << "file is empty()" << endl;
         return;
     }
+    this->setLogTitle(filename);
     m_tablectrl->processLog(filename);
+
 }
 
 void MainWindow::adbConnect() {
@@ -116,11 +128,14 @@ void MainWindow::logFilterReturnPress() {
         int start_offset = 0;
         while (true) {
             index = cur_msg.indexOf("|", start_offset);
+            QString msg;
             if (index == -1) {
-                filter.msg.append(cur_msg.mid(start_offset, -1));
+                msg = cur_msg.mid(start_offset, -1);
+                if (!msg.isEmpty())  filter.msg.append(msg);
                 break;
             } else {
-                filter.msg.append(cur_msg.mid(start_offset, index - start_offset));
+                msg = cur_msg.mid(start_offset, index - start_offset);
+                if (!msg.isEmpty()) filter.msg.append(msg);
                 start_offset = index+1;
             }
         }
@@ -237,6 +252,8 @@ void MainWindow::android_run() {
     this->ui->android_pause_resume_btn->setEnabled(true);
     this->ui->android_stop_btn->setEnabled(true);
     this->ui->android_clear_btn->setEnabled(true);
+
+    check_adb_device_tiemr.start(1000);
 }
 
 void MainWindow::android_pause_resume() {
@@ -274,6 +291,8 @@ void MainWindow::android_stop() {
     this->ui->android_pause_resume_btn->setEnabled(false);
     this->ui->android_stop_btn->setEnabled(false);
     this->ui->android_clear_btn->setEnabled(false);
+
+    check_adb_device_tiemr.stop();
 }
 
 void MainWindow::android_clear() {
@@ -283,4 +302,8 @@ void MainWindow::android_clear() {
     if (m_tablectrl) {
         m_tablectrl->android_clear();
     }
+}
+
+void MainWindow::setLogTitle(QString path) {
+    this->setWindowTitle(m_window_title+ " : " + path);
 }

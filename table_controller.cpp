@@ -100,11 +100,7 @@ void table_controller::setLogLevelVisible(LOG_LEVEL level, bool visible) {
 void table_controller::updateLogLevelVisible() {
     QTime stime;
     stime.start();
-    QVector<QVector<QString>> *logData = m_model->getLogDataPtr();
-    int row = logData->size();
-    for (int i = 0; i < row; ++i) {
-        m_view->setRowHidden(i, !isLevelVisible(logData->at(i).at(TABLE_COL_TYPE_LEVEL)));
-    }
+    processFilter(m_log_filter);
     qDebug() << "row hidden time diff: " << stime.elapsed() << endl;
 }
 
@@ -228,7 +224,8 @@ void table_controller::showAllLogs() {
 void table_controller::processLogOnline(const QByteArray &bArray) {
     //qDebug() << bArray;
     QVector<QString> vec = m_logConfig->processPerLine(bArray);
-    if (isFilterMatched(vec)) {
+    if (isLevelVisible(vec.at(TABLE_COL_TYPE_LEVEL))
+            &&isFilterMatched(vec)) {
         m_model->appendLogFilterData(vec, m_model->getLogDataPtr()->size());
     }
     m_model->appendLogData(vec);

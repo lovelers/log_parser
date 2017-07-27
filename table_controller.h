@@ -44,6 +44,7 @@ private:
     bool isFilterMatched(const QVector<QString> &str);
 
     QTimer *m_scroll_timer;
+
 public:
     table_controller(QTableView *table);
     bool checkConfigValid();

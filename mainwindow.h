@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QDialog>
+#include <QTimer>
 #include "table_controller.h"
 #include "table_model.h"
 #include "adb_online.h"
@@ -26,7 +27,9 @@ private:
     table_model *m_model;
     adb_online *m_adb;
     //af_debugger *m_afDebugger;
+    QString m_window_title;
 
+    QTimer check_adb_device_tiemr;
 
 public Q_SLOTS:
     void openLog();
@@ -68,7 +71,7 @@ public Q_SLOTS:
     void android_stop();
     void android_clear();
 
-
+    void setLogTitle(QString path);
 };
 
 #endif // MAINWINDOW_H

@@ -43,9 +43,6 @@ QStringList adb_online::checkDevices() {
     return list;
 }
 
-void adb_online::setOutput(QTextEdit *textEdit) {
-    m_text_edit = textEdit;
-}
 
 void adb_online::setCmd(UI_CMD_TYPE type) {
     qDebug() << __func__ << "type: " << type;
@@ -62,6 +59,9 @@ void adb_online::setCmd(UI_CMD_TYPE type) {
         break;
     case ANDROID_STOP:
         android_stop();
+        break;
+    case ANDROID_PAUSE:
+        android_pause();
         break;
     default:
         break;
@@ -90,11 +90,15 @@ void adb_online::android_run() {
     cmd << "logcat" << "-v" << "threadtime";
     qDebug() << cmd;
     m_process.start(shell, cmd);
+
     m_logcat_thread->setFilePath(path);
+    emit setLogTitle(path + " adb is running");
+}
+
+void adb_online::android_pause() {
 }
 
 void adb_online::android_resume() {
-
 }
 
 void adb_online::android_stop() {
@@ -117,6 +121,10 @@ void adb_online::android_clear() {
 void adb_online::processFinished(int exitCode , QProcess::ExitStatus exitStatus) {
     qDebug() << "processFinished, exitCode = " << exitCode
                 <<", exitStatus = " << exitStatus;
+    if (m_curType == ANDROID_RUN) {
+        qDebug() << "finished unexpected! run process again";
+        android_run();
+    }
 }
 
 void adb_online::started() {
@@ -125,6 +133,7 @@ void adb_online::started() {
 
 void adb_online::processError(QProcess::ProcessError processError){
     qDebug() << "processError:" << processError;
+
 }
 
 void adb_online::readReady() {
@@ -193,7 +202,7 @@ void adb_online::log_load_thread::run() {
             if (log_file.isWritable()) {
                 log_file.write(str);
             }
-            if (adb) emit adb->processLogOnline(str);
+            if (adb && adb->getCurType() != ANDROID_PAUSE) emit adb->processLogOnline(str);
         }
     }
 }
