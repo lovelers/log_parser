@@ -14,12 +14,14 @@
 #include "table_model.h"
 #include "table_item_delegate.h"
 #include <QTimer>
+#include <QFont>
+
 
 typedef struct {
     QStringList msg;
-    QString tag;
-    QString pid;
-    QString tid;
+    QStringList tag;
+    QStringList pid;
+    QStringList tid;
     qint32 line;
 } log_filter_t;
 
@@ -62,6 +64,10 @@ public:
     void android_clear();
     void android_resume();
     void android_pause();
+
+    void setFont(const QFont &font);
+
+    void recieveLineNumber(int line);
 public slots:
     void processLogOnline(const QByteArray &bArray);
     void scrollToBottom();

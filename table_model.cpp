@@ -1,5 +1,5 @@
 #include "table_model.h"
-
+#include <QDebug>
 table_model::table_model(QObject *parent):
     QAbstractTableModel(parent)
 {
@@ -50,7 +50,7 @@ Qt::ItemFlags table_model::flags(const QModelIndex &index) const
     if (!index.isValid())
         return Qt::ItemIsEnabled;
 
-    return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
+    return QAbstractTableModel::flags(index);
 }
 
 bool table_model::setData(const QModelIndex &index, const QVariant &value, int role) {
@@ -100,4 +100,36 @@ void table_model::appendLogFilterData(const QVector<QString> &data, int line) {
     filter_data.append(data);
     filter_line_info.append(line);
     this->endResetModel();
+}
+
+QModelIndex table_model::getModexIndex(int line, int col) {
+    int s_start = 0;
+    int s_end = filter_line_info.size() -1;
+    int s_mid = s_end / 2;
+    int dir = 0;
+    if (filter_line_info.isEmpty()) return this->index(0,col);
+    if (line > filter_line_info.at(s_end)) return this->index(s_end,col);
+    while (true) {
+        dir = line - filter_line_info.at(s_mid);
+        if (dir > 0) {
+            s_start = s_mid;
+            s_mid = (s_start + s_end) / 2;
+        } else if (dir < 0){
+            s_end = s_mid;
+            s_mid = (s_start + s_end) / 2;
+        } else { // dir == 0
+            break;
+        }
+        if (s_start == s_end ||
+                s_start == s_mid ||
+                s_end == s_mid) {
+            qDebug() << "can't find the target line";
+            break;
+        }
+        qDebug() << "s_start = " << s_start
+                 << "s_end  = " << s_end
+                 << "s_mid = " << s_mid;
+    }
+    qDebug() << "find the Index:" << s_mid;
+    return this->index(s_mid, col);
 }

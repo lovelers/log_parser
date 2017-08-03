@@ -30,7 +30,9 @@ SOURCES += \
     table_model.cpp \
     table_controller.cpp \
     table_item_delegate.cpp \
-    adb_online.cpp
+    adb_online.cpp \
+    goto_line_dialog.cpp \
+    persist_settings.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -39,10 +41,14 @@ HEADERS += \
     table_model.h \
     table_controller.h \
     table_item_delegate.h \
-    adb_online.h
+    adb_online.h \
+    goto_line_dialog.h \
+    persist_settings.h
 
 FORMS += \
         mainwindow.ui \
+    line_dialog.ui \
+    persist_settings.ui
 
 DISTFILES += \
     log_config.json \

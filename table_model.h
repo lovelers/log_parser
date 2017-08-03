@@ -25,6 +25,8 @@ public:
     }
     QVector<QVector<QString>> *getLogFilterData();
     QVector<qint32> *getLogFilterLine();
+    QModelIndex getModexIndex(int line, int col);
+private:
     log_config *m_log_config;
     QVector<QVector<QString>> log_data;
     QVector<QVector<QString>> filter_data;

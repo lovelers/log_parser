@@ -3,10 +3,13 @@
 
 #include <QMainWindow>
 #include <QDialog>
+#include <QFontDialog>
 #include <QTimer>
 #include "table_controller.h"
 #include "table_model.h"
 #include "adb_online.h"
+#include "goto_line_dialog.h"
+#include "persist_settings.h"
 namespace Ui {
 class MainWindow;
 }
@@ -30,6 +33,13 @@ private:
     QString m_window_title;
 
     QTimer check_adb_device_tiemr;
+    QStringList parseLogFilterText(QString text);
+
+    QFontDialog m_font_dialog;
+
+    goto_line_dialog *m_line_dialog;
+    persist_settings *m_persist_settings;
+
 
 public Q_SLOTS:
     void openLog();
@@ -38,7 +48,8 @@ public Q_SLOTS:
 
     void myExit();
 
-    void afDebugger();
+    void font();
+    void goto_line();
     void persistSettings();
 
     void version();
@@ -72,6 +83,10 @@ public Q_SLOTS:
     void android_clear();
 
     void setLogTitle(QString path);
+
+    void table_view_double_clicked(QModelIndex index);
+
+    void recieveLineNumber(int);
 };
 
 #endif // MAINWINDOW_H

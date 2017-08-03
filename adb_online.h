@@ -24,7 +24,6 @@ public:
     adb_online();
     ~adb_online();
     void setCmd(UI_CMD_TYPE type);
-    QStringList checkDevices();
     UI_CMD_TYPE getCurType() { return m_curType;}
     class log_load_thread : public QThread {
     public:
@@ -42,7 +41,6 @@ public:
     };
 private:
     QProcess m_process;
-    QTextEdit *m_text_edit;
     UI_CMD_TYPE m_curType;
     log_load_thread *m_logcat_thread;
     void android_run();
@@ -60,6 +58,11 @@ public slots:
 signals:
     void processLogOnline(const QByteArray &bArray);
     void setLogTitle(QString path);
+
+public:
+    static QStringList checkDevices();
+    static bool adbRootRemount();
+    static QString adbProperity(QString key, QString value);
 };
 
 #endif // ADB_ONLINE_H

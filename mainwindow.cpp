@@ -8,6 +8,7 @@
 #include <QTime>
 #include <QStringList>
 #include <QString>
+#include "goto_line_dialog.h"
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -15,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     m_tablectrl = new table_controller(ui->TableView);
     m_adb = new adb_online();
+    m_line_dialog = new goto_line_dialog();
+    m_persist_settings = new persist_settings();
     QObject::connect(m_adb, SIGNAL(processLogOnline(QByteArray)),
                      m_tablectrl, SLOT(processLogOnline(QByteArray)));
     QObject::connect(ui->msg_combobox->lineEdit(), SIGNAL(returnPressed()),
@@ -29,6 +32,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(m_adb, SIGNAL(setLogTitle(QString)),
                      this, SLOT(setLogTitle(QString)));
 
+    m_line_dialog->setModal(true);
+    QObject::connect(m_line_dialog, SIGNAL(sendLineNumber(int)),
+                     this, SLOT(recieveLineNumber(int)));
     ui->android_stop_btn->setEnabled(false);
 
     m_window_title.append("log parser");
@@ -36,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QObject::connect(&check_adb_device_tiemr, SIGNAL(timeout()),
                      this, SLOT(android_devices_select()));
+    check_adb_device_tiemr.start(1000);
     QWidget::showMaximized();
 }
 
@@ -73,20 +80,26 @@ void MainWindow::recentlyFiles() {
     qDebug() << "recentlyFiles" << endl;
 }
 
-void MainWindow::afDebugger() {
-#if 0
-    qDebug() << "afDebugger" << endl;
-    if (m_afDebugger) m_afDebugger->show();
-    if (m_afDebugger->isVisible()) {
-        QString filename = "C:/Work/Cygwin/home/zixiangz/af_debugger/log.txt";
-        m_afDebugger->processLog(filename);
+void MainWindow::font() {
+    bool ok = false;
+    qDebug() << " goto font" ;
+    QFont font = QFontDialog::getFont(&ok, QFont(), this);
+    if (ok) {
+        m_tablectrl->setFont(font);
     }
-#endif
+}
+
+void MainWindow::goto_line() {
+    qDebug() << "goto here";
+    //m_line_dialog->setFocus();
+    m_line_dialog->show();
 }
 
 void MainWindow::persistSettings() {
     qDebug() << "persistSettings" << endl;
+    if (m_persist_settings) m_persist_settings->show();
 }
+
 void MainWindow::version() {
     qDebug() << "version 1.0" << endl;
 }
@@ -108,8 +121,12 @@ void MainWindow::myShow() {
 
 void MainWindow::logFilterReturnPress() {
     log_filter_t filter;
-    QString cur_msg = ui->msg_combobox->currentText();
 
+    QString cur_msg = ui->msg_combobox->currentText();
+    filter.msg = parseLogFilterText(cur_msg);
+    filter.tag = parseLogFilterText(ui->tag_edit->text());
+    filter.pid = parseLogFilterText(ui->pid_edit->text());
+    filter.tid = parseLogFilterText(ui->tid_edit->text());
     // remove the duplicate items of ui
     QStringList list;
     list.append(cur_msg);
@@ -122,33 +139,36 @@ void MainWindow::logFilterReturnPress() {
     ui->msg_combobox->addItems(list);
 
     qDebug() << "msg combobox = " << list;
-    // parse the msg list for filter
-    if (!cur_msg.isEmpty()) {
+    qDebug() << "fitler msg:" << filter.msg;
+    qDebug() << "filter tag:" << filter.tag;
+    qDebug() << "filter pid:" << filter.pid;
+    qDebug() << "filter tid:" << filter.tid;
+    m_tablectrl->processFilter(filter);
+    //ui->TableView->setFocus();
+}
+
+QStringList MainWindow::parseLogFilterText(QString text) {
+    QStringList list;
+    if (!text.isEmpty()) {
         int index= 0;
         int start_offset = 0;
         while (true) {
-            index = cur_msg.indexOf("|", start_offset);
+            index = text.indexOf("|", start_offset);
             QString msg;
             if (index == -1) {
-                msg = cur_msg.mid(start_offset, -1);
-                if (!msg.isEmpty())  filter.msg.append(msg);
+                msg = text.mid(start_offset, -1);
+                if (!msg.isEmpty())  list.append(msg);
                 break;
             } else {
-                msg = cur_msg.mid(start_offset, index - start_offset);
-                if (!msg.isEmpty()) filter.msg.append(msg);
+                msg = text.mid(start_offset, index - start_offset);
+                if (!msg.isEmpty()) list.append(msg);
                 start_offset = index+1;
             }
         }
     }
-    qDebug() << "msg filter: " << filter.msg;
-
-    filter.tag = ui->tag_edit->text();
-    filter.pid = ui->pid_edit->text();
-    filter.tid = ui->tid_edit->text();
-    qDebug() << filter.tag << filter.pid << filter.tid;
-
-    m_tablectrl->processFilter(filter);
+    return list;
 }
+
 void MainWindow::logFilterClearClicked() {
     ui->msg_combobox->clearEditText();
     ui->tag_edit->clear();
@@ -228,16 +248,30 @@ void MainWindow::fatal_cb_checked(bool clicked) {
 
 // android devices
 void MainWindow::android_devices_select() {
+    static QStringList pre_list;
     if (m_adb) {
         QStringList list = m_adb->checkDevices();
-        ui->android_devices_cb->clear();
-        if (list.size() == 0) {
-            ui->android_devices_cb->insertItem(0, "devices disconnect");
+        if (list.size() == 0)
+            list << "adb disconnect";
+        bool needUpdate = false;
+        if (list.size() == pre_list.size()) {
+            for (int i = 0; i < list.size(); i++) {
+                if (!pre_list.contains(list.at(i))) {
+                    needUpdate = true;
+                    break;
+                }
+            }
+        } else {
+            needUpdate = true;
         }
-        for (int i = 0; i < list.size(); i++) {
-            ui->android_devices_cb->insertItem(i, list.at(i));
+        if (needUpdate == true) {
+            qDebug() << "need update new list of devcies";
+            ui->android_devices_cb->clear();
+            for (int i = 0; i < list.size(); i++) {
+                ui->android_devices_cb->insertItem(i, list.at(i));
+            }
         }
-
+        pre_list = list;
     }
 }
 
@@ -253,7 +287,7 @@ void MainWindow::android_run() {
     this->ui->android_stop_btn->setEnabled(true);
     this->ui->android_clear_btn->setEnabled(true);
 
-    check_adb_device_tiemr.start(1000);
+    //check_adb_device_tiemr.start(1000);
 }
 
 void MainWindow::android_pause_resume() {
@@ -288,11 +322,12 @@ void MainWindow::android_stop() {
         m_tablectrl->android_stop();
     }
     this->ui->android_run_btn->setEnabled(true);
+    ui->android_pause_resume_btn->setText("Pause");
     this->ui->android_pause_resume_btn->setEnabled(false);
     this->ui->android_stop_btn->setEnabled(false);
     this->ui->android_clear_btn->setEnabled(false);
 
-    check_adb_device_tiemr.stop();
+    //check_adb_device_tiemr.stop();
 }
 
 void MainWindow::android_clear() {
@@ -306,4 +341,14 @@ void MainWindow::android_clear() {
 
 void MainWindow::setLogTitle(QString path) {
     this->setWindowTitle(m_window_title+ " : " + path);
+}
+
+void MainWindow::table_view_double_clicked(QModelIndex index) {
+    qDebug() << index.column();
+}
+
+void MainWindow::recieveLineNumber(int line) {
+    if (m_tablectrl) {
+        m_tablectrl->recieveLineNumber(line);
+    }
 }

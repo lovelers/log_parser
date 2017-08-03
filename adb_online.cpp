@@ -18,31 +18,10 @@ adb_online::adb_online()
     qDebug() << "get read channel" << m_process.readChannel();
     m_process.setReadChannel(QProcess::StandardOutput);
     m_curType = ANDROID_UNKNOWN;
-    m_text_edit = NULL;
     m_logcat_thread = new log_load_thread(this);
     m_logcat_thread->setQProcess(&m_process);
 
 }
-
-QStringList adb_online::checkDevices() {
-    QProcess process;
-    process.start("adb", QStringList() << "devices");
-    process.waitForFinished(100);//200ms;
-    QStringList list;
-    do {
-        QString str = process.readLine();
-        if (str.isEmpty()) break;
-        int idx = str.indexOf("\tdevice");
-        if (idx != -1) {
-            list << str.mid(0, idx);
-        }
-        qDebug() << str;
-    } while (true);
-    qDebug() << list;
-    process.close();
-    return list;
-}
-
 
 void adb_online::setCmd(UI_CMD_TYPE type) {
     qDebug() << __func__ << "type: " << type;
@@ -110,7 +89,7 @@ void adb_online::android_stop() {
 void adb_online::android_clear() {
     //android_stop();
     QProcess process;
-    process.start("adb", QStringList() << "clear");
+    process.start("adb", QStringList() << "logcat -c");
     bool finished = process.waitForFinished(1000);
     qDebug() << "wiat for finished:" << finished;
 
@@ -121,7 +100,7 @@ void adb_online::android_clear() {
 void adb_online::processFinished(int exitCode , QProcess::ExitStatus exitStatus) {
     qDebug() << "processFinished, exitCode = " << exitCode
                 <<", exitStatus = " << exitStatus;
-    if (m_curType == ANDROID_RUN) {
+    if (m_curType != ANDROID_STOP) {
         qDebug() << "finished unexpected! run process again";
         android_run();
     }
@@ -205,4 +184,63 @@ void adb_online::log_load_thread::run() {
             if (adb && adb->getCurType() != ANDROID_PAUSE) emit adb->processLogOnline(str);
         }
     }
+}
+
+
+
+QStringList adb_online::checkDevices() {
+    //QProcess m_device_check;
+    QProcess process;
+    process.start("adb", QStringList() << "devices");
+    process.waitForFinished(100);//200ms;
+    QStringList list;
+    do {
+        QString str = process.readLine();
+        if (str.isEmpty()) {
+            break;
+        }
+        int idx = str.indexOf("\tdevice");
+        if (idx != -1) {
+            list << str.mid(0, idx);
+        }
+        //qDebug() << str;
+    } while (true);
+    //qDebug() << list;
+    process.close();
+    return list;
+}
+
+bool adb_online::adbRootRemount() {
+    QProcess process;
+    process.start("adb", QStringList() << "root");
+    process.waitForFinished(2000);
+    QString adbroot = process.readAll();
+    process.close();
+#if 0
+    process.start("adb", QStringList() << "remount");
+    process.waitForFinished(2000);
+    QString adbremount = process.readAll();
+
+    qDebug() << adbroot << adbremount << endl;
+    process.close();
+#endif
+    if (adbroot.indexOf("failed") == -1) {
+        return true;
+    }
+    return false;
+}
+
+QString adb_online::adbProperity(QString key, QString value) {
+    QProcess process;
+    qDebug() << key << value;
+    process.start("adb" , QStringList() << "shell" << "setprop" << key << value);
+    process.waitForFinished(100);
+    QString setprop = process.readAll().simplified();
+    process.close();
+    process.start("adb", QStringList() << "shell" << "getprop " << key);
+    process.waitForFinished(100);
+    QString getprop = process.readAll().simplified();
+    process.close();
+    qDebug() << setprop << getprop << endl;
+    return getprop;
 }

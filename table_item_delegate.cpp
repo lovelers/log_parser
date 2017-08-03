@@ -16,6 +16,7 @@ void table_item_delegate::paint(QPainter *painter, const QStyleOptionViewItem &o
         if (msgFilter.isEmpty()) {
             QStyledItemDelegate::paint(painter, option, index);
         } else {
+            const QFont& font =  painter->font();
             QString str = index.data().toString();
             for (int i = 0; i < msgFilter.size(); i++) {
                 int index = str.indexOf(msgFilter.at(i));
@@ -35,7 +36,6 @@ void table_item_delegate::paint(QPainter *painter, const QStyleOptionViewItem &o
             initStyleOption(&options, index);
 
             painter->save();
-
             QTextDocument doc;
             options.text = str;
             doc.setHtml(options.text);

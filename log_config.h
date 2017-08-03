@@ -26,6 +26,12 @@ typedef enum {
     LOG_LEVEL_MAX,
 } LOG_LEVEL;
 
+typedef struct {
+    QString name;
+    QString value;
+    QString value_range;
+} Persist;
+
 static log_config *g_logConfig = NULL;
 class log_config
 {
@@ -49,12 +55,13 @@ public:
     const QVector<qint16> &getWidths() { return m_widths;}
     static QVector<QString> processPerLine(const QString &&str, cmd_type type = LOGCAT_THREADTIME);
     static cmd_type checkCmdType(QString &ss);
-
+    const QVector<Persist>& getPersist() { return m_persist;}
 private:
     QVector<QString> m_keys;
     QVector<qint16> m_widths;
     bool m_isValid;
     log_config();
+    QVector<Persist> m_persist;
 };
 
 #endif // LOG_CONFIG_H

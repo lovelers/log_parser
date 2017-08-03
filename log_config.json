@@ -35,5 +35,128 @@
             "key" : "msg",
             "width" : 3000
         }
+    ],
+    "Persist" : [
+        {
+            "key" : "persist.camera.global.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.mct.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.sensor.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.iface.logs",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.isp.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.pproc.debug.mask",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.imglib.logs",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.cpp.debug.mask",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.hal.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.mmstill.logs",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.c2d.debug.mask",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.stats.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.stats.af.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.stats.aec.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.stats.awb.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.stats.afd.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.stats.q3a.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.stats.is.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.stats.haf.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.stats.cafscan",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.shim.debug",
+            "value" : "1",
+            "range" : "[0-6]"
+        },
+        {
+            "key" : "persist.camera.stats.disablehaf",
+            "value" : "0",
+            "range" : "[0-1]"
+        },
+        {
+            "key" : "persist.camera.mw.enable",
+            "value" : "0",
+            "range" : "[0-1]"
+        },
+        {
+            "key" : "persist.camera.st.bokeh.preview",
+            "value" : "1",
+            "range" : "[0-1]"
+        }
+
     ]
 }

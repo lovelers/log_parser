@@ -27,7 +27,6 @@ table_controller::table_controller(QTableView *view) {
     m_scroll_timer = new QTimer(this);
     QObject::connect(m_scroll_timer, SIGNAL(timeout()),
                      this, SLOT(scrollToBottom()));
-
     m_column_visible = 0xffff; // all the column are visible default
     m_level_visible = 0xffff; // all the log level are visible default
 
@@ -164,9 +163,13 @@ bool table_controller::isFilterMatched(const QVector<QString> &str) {
      * if tid is not empty, but not match the str. return false.
      * if tid is not empty, and match the str, goto next item match.
      **/
-    if (!m_log_filter.tid.isEmpty() &&
-            str.at(TABLE_COL_TYPE_TID).indexOf(m_log_filter.tid) == -1) {
-        return false;
+    if (!m_log_filter.tid.isEmpty()) {
+        for (int i = 0; i < m_log_filter.tid.size(); ++i) {
+            if(str.at(TABLE_COL_TYPE_TID).indexOf(m_log_filter.tid.at(i)) != -1) {
+                break;
+            }
+            if (i == m_log_filter.tid.size() -1) return false;
+        }
     }
 
     /**
@@ -174,9 +177,13 @@ bool table_controller::isFilterMatched(const QVector<QString> &str) {
      * if pid is not empty, but not match the str. return false.
      * if pid is not empty, and match the str, goto next item match.
      **/
-    if (!m_log_filter.pid.isEmpty() &&
-            str.at(TABLE_COL_TYPE_PID).indexOf(m_log_filter.pid) == -1) {
-        return false;
+    if (!m_log_filter.pid.isEmpty()) {
+        for (int i = 0; i < m_log_filter.pid.size(); ++i) {
+            if(str.at(TABLE_COL_TYPE_PID).indexOf(m_log_filter.pid.at(i)) != -1) {
+                break;
+            }
+            if (i == m_log_filter.pid.size() -1) return false;
+        }
     }
 
     /**
@@ -184,9 +191,13 @@ bool table_controller::isFilterMatched(const QVector<QString> &str) {
      * if tag is not empty, but not match the str. return false.
      * if tag is not empty, and match the str, goto next item match.
      **/
-    if ( !m_log_filter.tag.isEmpty()
-            && str.at(TABLE_COL_TYPE_TAG).indexOf(m_log_filter.tag) == -1) {
-        return false;
+    if (!m_log_filter.tag.isEmpty()) {
+        for (int i = 0; i < m_log_filter.tag.size(); ++i) {
+            if(str.at(TABLE_COL_TYPE_TAG).indexOf(m_log_filter.tag.at(i)) != -1) {
+                break;
+            }
+            if (i == m_log_filter.tag.size() -1) return false;
+        }
     }
 
     /**
@@ -238,10 +249,11 @@ void table_controller::android_run() {
 
 void table_controller::android_resume() {
     //
+    m_scroll_timer->start(10);
 }
 
 void table_controller::android_pause() {
-
+    m_scroll_timer->stop();
 }
 
 void table_controller::android_stop() {
@@ -257,4 +269,18 @@ void table_controller::android_clear() {
 
 void table_controller::scrollToBottom() {
     if (m_view) m_view->scrollToBottom();
+}
+
+void table_controller::setFont(const QFont &font) {
+    if (m_view) m_view->setFont(font);
+}
+
+
+void table_controller::recieveLineNumber(int line) {
+    if (m_view && m_model) {
+        qDebug() << __func__ << "goto line:" << line;
+        m_view->selectRow(line);
+        m_view->scrollTo(m_model->getModexIndex(line, 0));
+        m_view->setFocus();
+    }
 }

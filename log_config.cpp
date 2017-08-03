@@ -30,7 +30,20 @@ log_config::log_config()
             qDebug() << "print" << obj["width"].toInt() << endl;
         }
 
-        if (m_keys.size() > 0) {
+        jarr = jobj["Persist"].toArray();
+        foreach(const QJsonValue &value, jarr) {
+            QJsonObject obj = value.toObject();
+            Persist persist;
+            persist.name.append(obj["key"].toString());
+            persist.value.append(obj["value"].toString());
+            persist.value_range.append(obj["range"].toString());
+            m_persist.append(persist);
+            qDebug() << "name:" << persist.name
+                     << "value:" << persist.value
+                     << "range:" << persist.value_range;
+        }
+
+        if (m_keys.size() > 0 && m_persist.size() >0) {
             m_isValid = true;
         } else {
             m_isValid = false;
