@@ -48,6 +48,16 @@ table_controller::table_controller(QTableView *view) {
     m_show_more_log = new show_more_log;
 }
 
+table_controller::~table_controller() {
+    if (m_show_more) delete m_show_more;
+    if (m_show_more_log) delete m_show_more_log;
+    if (m_menu) delete m_menu;
+    if (m_scroll_timer) delete m_scroll_timer;
+
+    if (m_delegate) delete m_delegate;
+    if (m_model) delete m_model;
+}
+
 bool table_controller::checkConfigValid() {
     return m_logConfig->isConfigValid();
 }

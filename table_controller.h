@@ -53,6 +53,7 @@ private:
 
 public:
     table_controller(QTableView *table);
+    ~table_controller();
     bool checkConfigValid();
     bool processLog(QString &filename);
 
