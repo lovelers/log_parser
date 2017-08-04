@@ -1317,6 +1317,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>TableView</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>table_view_double_clicked(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>639</x>
+     <y>439</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>639</x>
+     <y>359</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>openLog()</slot>

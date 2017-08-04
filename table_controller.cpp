@@ -7,14 +7,23 @@
 #include <QMessageBox>
 #include <QThread>
 #include <QHeaderView>
+#include <QMenu>
 
+#include "show_more_log.h"
 table_controller::table_controller(QTableView *view) {
     m_logConfig = log_config::getInstance();
+
     m_view = view;
     m_model = new table_model();
     m_delegate = new table_item_delegate();
+
+
     m_view->setModel(m_model);
     m_view->setItemDelegate(m_delegate);
+    m_view->setContextMenuPolicy(Qt::CustomContextMenu);
+    QObject::connect(m_view, SIGNAL(customContextMenuRequested(QPoint)),
+                     this, SLOT(tableCustomMenuRequest(QPoint)));
+
     if (m_logConfig->isConfigValid()) {
         const QVector<QString> &keys = m_logConfig->getKeys();
         const QVector<qint16> &widths = m_logConfig->getWidths();
@@ -30,6 +39,13 @@ table_controller::table_controller(QTableView *view) {
     m_column_visible = 0xffff; // all the column are visible default
     m_level_visible = 0xffff; // all the log level are visible default
 
+    //show more log
+    m_menu =new QMenu(m_view);
+    m_show_more = new QAction("show more...");
+    QObject::connect(m_show_more, SIGNAL(triggered()),
+                     this, SLOT(showMore()));
+    m_menu->addAction(m_show_more);
+    m_show_more_log = new show_more_log;
 }
 
 bool table_controller::checkConfigValid() {
@@ -42,28 +58,28 @@ bool table_controller::processLog(QString &filename) {
     stime.start();
     QFile *file = new QFile(filename);
 
-    QVector<QVector<QString>> logData;
-    QVector<QVector<QString>> filterData;
-    QVector<qint32> filterLine;
+    QVector<log_info_per_line_t> logData;
+    QVector<log_info_per_line_t> filterData;
 
-    QVector<QString> tmp;
+    log_info_per_line_t log_info_per_line;
     logData.reserve(500000);
     if (file->open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(file);
+        int line_count = 1;
         while (!in.atEnd()) {
-            tmp = m_logConfig->processPerLine(in.readLine());
-            if (isFilterMatched(tmp)) {
-                filterData.append(tmp);
-                filterLine.append(logData.size());
+            log_info_per_line = m_logConfig->processPerLine(in.readLine());
+            log_info_per_line.line = line_count++;
+            if (isFilterMatched(log_info_per_line)) {
+                filterData.append(log_info_per_line);
             }
-            logData.append(tmp);
+            logData.append(log_info_per_line);
         }
         file->close();
     } else {
         qDebug() << "open file failed" << endl;
     }
     m_model->setLogData(logData);
-    m_model->setLogFilterData(filterData, filterLine);
+    m_model->setLogFilterData(filterData);
     qDebug() << "total log process diff time" << stime.elapsed() << "ms" << endl;
     return true;
 }
@@ -124,33 +140,31 @@ bool table_controller::isLevelVisible(const QString &leve) {
 void table_controller::processFilter(const log_filter_t& filter) {
     m_log_filter = filter;
 
-    QVector<QVector<QString>> *logData = m_model->getLogDataPtr();
+    log_info_t *logData = m_model->getLogDataPtr();
     if (logData->isEmpty()) return;
 
-    QVector<QVector<QString>> filterData;
-    QVector<qint32> filterLine;
+    log_info_t filterData;
     int row = logData->size();
     qDebug() << "row = " << row << endl;
     QTime stime;
     stime.start();
     for (int i = 0; i < row; ++i) {
-        const QVector<QString> &vec = logData->at(i);
+        const log_info_per_line_t &vec = logData->at(i);
         //qDebug() << "row_index" << row_index << endl;
-        if (isLevelVisible(vec.at(TABLE_COL_TYPE_LEVEL))
+        if (isLevelVisible(vec.level)
                 && isFilterMatched(vec)) {
             filterData.append(vec);
-            filterLine.append(i);
         } else {
             //m_view->setRowHidden(i, true);
         }
     }
-    m_model->setLogFilterData(filterData, filterLine);
+    m_model->setLogFilterData(filterData);
     m_delegate->updateMsgFilter(m_log_filter.msg);
     qDebug() << "filter time diff " << stime.elapsed();
 }
 
 
-bool table_controller::isFilterMatched(const QVector<QString> &str) {
+bool table_controller::isFilterMatched(const log_info_per_line_t &str) {
     if (m_log_filter.tid.isEmpty() &&
             m_log_filter.pid.isEmpty()&&
             m_log_filter.tag.isEmpty()&&
@@ -165,7 +179,7 @@ bool table_controller::isFilterMatched(const QVector<QString> &str) {
      **/
     if (!m_log_filter.tid.isEmpty()) {
         for (int i = 0; i < m_log_filter.tid.size(); ++i) {
-            if(str.at(TABLE_COL_TYPE_TID).indexOf(m_log_filter.tid.at(i)) != -1) {
+            if(str.tid.indexOf(m_log_filter.tid.at(i)) != -1) {
                 break;
             }
             if (i == m_log_filter.tid.size() -1) return false;
@@ -179,7 +193,7 @@ bool table_controller::isFilterMatched(const QVector<QString> &str) {
      **/
     if (!m_log_filter.pid.isEmpty()) {
         for (int i = 0; i < m_log_filter.pid.size(); ++i) {
-            if(str.at(TABLE_COL_TYPE_PID).indexOf(m_log_filter.pid.at(i)) != -1) {
+            if(str.pid.indexOf(m_log_filter.pid.at(i)) != -1) {
                 break;
             }
             if (i == m_log_filter.pid.size() -1) return false;
@@ -193,7 +207,7 @@ bool table_controller::isFilterMatched(const QVector<QString> &str) {
      **/
     if (!m_log_filter.tag.isEmpty()) {
         for (int i = 0; i < m_log_filter.tag.size(); ++i) {
-            if(str.at(TABLE_COL_TYPE_TAG).indexOf(m_log_filter.tag.at(i)) != -1) {
+            if(str.tag.indexOf(m_log_filter.tag.at(i)) != -1) {
                 break;
             }
             if (i == m_log_filter.tag.size() -1) return false;
@@ -207,7 +221,7 @@ bool table_controller::isFilterMatched(const QVector<QString> &str) {
      **/
     if (!m_log_filter.msg.isEmpty()) {
         for (int i = 0; i < m_log_filter.msg.size(); ++i) {
-            if (str.at(TABLE_COL_TYPE_MSG).indexOf(m_log_filter.msg.at(i)) != -1)
+            if (str.msg.indexOf(m_log_filter.msg.at(i)) != -1)
                 return true;
         }
         return false;
@@ -216,15 +230,13 @@ bool table_controller::isFilterMatched(const QVector<QString> &str) {
 }
 
 void table_controller::showAllLogs() {
-     QVector<QVector<QString>> *logData = m_model->getLogDataPtr();
-     QVector<QVector<QString>> filterData;
-     QVector<qint32> filterLine;
+    log_info_t *logData = m_model->getLogDataPtr();
+    log_info_t filterData;
     int row = logData->size();
     for (int i = 0; i < row; i++) {
         filterData.append(logData->at(i));
-        filterLine.append(i);
     }
-    m_model->setLogFilterData(filterData, filterLine);
+    m_model->setLogFilterData(filterData);
     m_log_filter.msg.clear();
     m_log_filter.pid.clear();
     m_log_filter.tid.clear();
@@ -232,14 +244,17 @@ void table_controller::showAllLogs() {
     m_delegate->updateMsgFilter(m_log_filter.msg);
 }
 
-void table_controller::processLogOnline(const QByteArray &bArray) {
+void table_controller::processLogOnline(const QByteArray &bArray, int line_count) {
     //qDebug() << bArray;
-    QVector<QString> vec = m_logConfig->processPerLine(bArray);
-    if (isLevelVisible(vec.at(TABLE_COL_TYPE_LEVEL))
-            &&isFilterMatched(vec)) {
-        m_model->appendLogFilterData(vec, m_model->getLogDataPtr()->size());
-    }
+
+    log_info_per_line_t vec = m_logConfig->processPerLine(bArray);
+    vec.line = line_count;
     m_model->appendLogData(vec);
+    if (isLevelVisible(vec.level)
+            &&isFilterMatched(vec)) {
+        m_model->appendLogFilterData(vec);
+    }
+
 }
 
 void table_controller::android_run() {
@@ -283,4 +298,55 @@ void table_controller::recieveLineNumber(int line) {
         m_view->scrollTo(m_model->getModexIndex(line, 0));
         m_view->setFocus();
     }
+}
+
+void table_controller::tableCustomMenuRequest(QPoint point) {
+    if (m_menu) {
+        m_menu->popup(m_view->viewport()->mapToGlobal(point));
+    }
+}
+
+void table_controller::showMore() {
+    QModelIndex index =
+            m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
+    qint32 row = index.row();
+    log_info_t *logDataPtr =
+            m_model->getLogDataPtr();
+    log_info_t more_log;
+    if (row < 0 ||
+            logDataPtr->size() == 0 ||
+            row > logDataPtr->size()) {
+        return;
+    }
+    int line = m_model->getLogFilterDataPtr()->at(row).line;
+    int start = line - 100;
+    if (start < 0) start = 0;
+
+    int end = line + 100;
+    if (end > logDataPtr->size()) end = logDataPtr->size();
+    if (m_show_more_log) m_show_more_log->clearLog();
+
+    for(int i = start; i < end; i++) {
+        if (m_show_more_log) {
+            QString str;
+            str.append(QString::number(logDataPtr->at(i).line));
+            str.append("\t");
+            str.append(logDataPtr->at(i).time);
+            str.append("\t");
+            str.append(logDataPtr->at(i).level);
+            str.append("\t");
+            str.append(logDataPtr->at(i).pid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tag);
+            str.append("\t");
+            str.append(logDataPtr->at(i).msg);
+            str.append("\t");
+            m_show_more_log->appendLog(str);
+        }
+    }
+    m_show_more_log->scrollToLine(line-start);
+    m_show_more_log->show();
+    m_show_more_log->activateWindow();
 }

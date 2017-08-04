@@ -15,7 +15,8 @@
 #include "table_item_delegate.h"
 #include <QTimer>
 #include <QFont>
-
+#include <QMenu>
+#include "show_more_log.h"
 
 typedef struct {
     QStringList msg;
@@ -24,7 +25,6 @@ typedef struct {
     QStringList tid;
     qint32 line;
 } log_filter_t;
-
 
 class table_controller : public QObject {
 
@@ -36,6 +36,10 @@ private:
     log_config *m_logConfig;
     table_item_delegate *m_delegate;
 
+    QMenu *m_menu;
+    QAction *m_show_more;
+    show_more_log *m_show_more_log;
+
     qint32 m_column_visible;
     qint32 m_level_visible;
 
@@ -43,7 +47,7 @@ private:
     void updateLogLevelVisible();
     void updateColumnVisible(TABLE_COL_TYPE type, bool visible);
     inline bool isLevelVisible(const QString & str);
-    bool isFilterMatched(const QVector<QString> &str);
+    bool isFilterMatched(const log_info_per_line_t &str);
 
     QTimer *m_scroll_timer;
 
@@ -69,8 +73,10 @@ public:
 
     void recieveLineNumber(int line);
 public slots:
-    void processLogOnline(const QByteArray &bArray);
+    void processLogOnline(const QByteArray &bArray, int line_count);
     void scrollToBottom();
+    void tableCustomMenuRequest(QPoint point);
+    void showMore();
 };
 
 #endif // table_controller_H

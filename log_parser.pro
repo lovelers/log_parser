@@ -32,7 +32,8 @@ SOURCES += \
     table_item_delegate.cpp \
     adb_online.cpp \
     goto_line_dialog.cpp \
-    persist_settings.cpp
+    persist_settings.cpp \
+    show_more_log.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -43,12 +44,14 @@ HEADERS += \
     table_item_delegate.h \
     adb_online.h \
     goto_line_dialog.h \
-    persist_settings.h
+    persist_settings.h \
+    show_more_log.h
 
 FORMS += \
         mainwindow.ui \
     line_dialog.ui \
-    persist_settings.ui
+    persist_settings.ui \
+    show_more_log.ui
 
 DISTFILES += \
     log_config.json \

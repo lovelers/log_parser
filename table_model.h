@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QAbstractTableModel>
 #include "log_config.h"
+
+
 class table_model : public QAbstractTableModel
 {
 public:
@@ -14,23 +16,19 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
-    void setLogData(const QVector<QVector<QString>> &data);
-    void appendLogData(const QVector<QString> &data);
+    void setLogData(const log_info_t &data);
+    void appendLogData(const log_info_per_line_t &data);
     void clearData();
-    QVector<QVector<QString>> * getLogDataPtr();
-    void setLogFilterData(const QVector<QVector<QString>> &data, const QVector<qint32> &line_info);
-    void appendLogFilterData(const QVector<QString> &data, int line);
-    inline QModelIndex getLastModelIndex() {
-        return this->index(filter_line_info.size(),0);
-    }
-    QVector<QVector<QString>> *getLogFilterData();
-    QVector<qint32> *getLogFilterLine();
+    log_info_t * getLogDataPtr();
+    void setLogFilterData(const log_info_t &data);
+    void appendLogFilterData(const log_info_per_line_t &data);
+
+    log_info_t *getLogFilterDataPtr();
     QModelIndex getModexIndex(int line, int col);
 private:
     log_config *m_log_config;
-    QVector<QVector<QString>> log_data;
-    QVector<QVector<QString>> filter_data;
-    QVector<qint32> filter_line_info;
+    log_info_t log_data;
+    log_info_t filter_data;
 };
 
 #endif // TABLE_MODEL_H

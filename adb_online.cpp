@@ -136,6 +136,7 @@ adb_online::~adb_online() {
 
 adb_online::log_load_thread::log_load_thread(adb_online *adb) {
     this->adb = adb;
+    line_count = 0;
 }
 
 adb_online::log_load_thread::~log_load_thread() {
@@ -167,6 +168,7 @@ void adb_online::log_load_thread::saveToFile(){
     if (log_file.isOpen()) {
         log_file.close();
     }
+    line_count =  0;
 }
 
 void adb_online::log_load_thread::setQProcess(QProcess *process) {
@@ -181,7 +183,7 @@ void adb_online::log_load_thread::run() {
             if (log_file.isWritable()) {
                 log_file.write(str);
             }
-            if (adb && adb->getCurType() != ANDROID_PAUSE) emit adb->processLogOnline(str);
+            if (adb && adb->getCurType() != ANDROID_PAUSE) emit adb->processLogOnline(str, line_count++);
         }
     }
 }

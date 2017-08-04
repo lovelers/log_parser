@@ -36,7 +36,7 @@ public:
         QFile log_file;
         adb_online *adb;
         QProcess *process;
-        QTextEdit *text_edit;
+        qint32 line_count;
         void run();
     };
 private:
@@ -56,7 +56,7 @@ public slots:
     void readReady();
 
 signals:
-    void processLogOnline(const QByteArray &bArray);
+    void processLogOnline(const QByteArray &bArray,int line_count);
     void setLogTitle(QString path);
 
 public:

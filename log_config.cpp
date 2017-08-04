@@ -51,21 +51,12 @@ log_config::log_config()
     }
 }
 
-QVector<QString> log_config::processPerLine(const QString &&str, cmd_type type){
-    QVector<QString> logItem;
+log_info_per_line_t log_config::processPerLine(const QString &&str, cmd_type type){
+    log_info_per_line_t line;
     int delimiter = -1;
     switch (type) {
     case LOGCAT_THREADTIME:
 #if 0
-        logItem.append(str.mid(0, 5)); //Date
-        logItem.append(str.mid(6,12)); //Time
-        logItem.append(str.mid(19,1)); //Level
-        logItem.append(str.mid(21,8)); //Pid
-        logItem.append(str.mid(30,8)); //Tid
-        delimiter = str.indexOf(QChar(':'), 39);
-        logItem.append(str.mid(39, delimiter-39)); // Tag
-        logItem.append(str.mid(delimiter+1).simplified()); //msg
-#else
         logItem.append(str.mid(0, 5)); //Date
         logItem.append(str.mid(6,12)); //Time
         logItem.append(str.mid(31,1)); //Level
@@ -75,12 +66,21 @@ QVector<QString> log_config::processPerLine(const QString &&str, cmd_type type){
         delimiter = str.indexOf(QChar(':'), 33);
         logItem.append(str.mid(33, delimiter-33)); // Tag
         logItem.append(str.mid(delimiter+1).simplified()); //msg
+#else
+        line.date = str.mid(0,5);
+        line.time = str.mid(6,12);
+        line.pid = str.mid(19,5);
+        line.tid = str.mid(25,5);
+        line.level = str.mid(31,1);
+        delimiter = str.indexOf(QChar(':'), 33);
+        line.tag = str.mid(33, delimiter - 33);
+        line.msg = str.mid(delimiter+1);
 #endif
         break;
     default:
         break;
     }
-    return logItem;
+    return line;
 }
 
 log_config::cmd_type log_config::checkCmdType(QString &ss) {

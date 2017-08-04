@@ -33,6 +33,18 @@ typedef struct {
 } Persist;
 
 static log_config *g_logConfig = NULL;
+typedef struct {
+    int line;
+    QString date;
+    QString time;
+    QString level;
+    QString pid;
+    QString tid;
+    QString tag;
+    QString msg;
+} log_info_per_line_t;
+
+typedef QVector<log_info_per_line_t> log_info_t;
 class log_config
 {
 
@@ -53,7 +65,7 @@ public:
     bool isConfigValid() const { return m_isValid; }
     const QVector<QString> &getKeys() { return m_keys;}
     const QVector<qint16> &getWidths() { return m_widths;}
-    static QVector<QString> processPerLine(const QString &&str, cmd_type type = LOGCAT_THREADTIME);
+    static log_info_per_line_t processPerLine(const QString &&str, cmd_type type = LOGCAT_THREADTIME);
     static cmd_type checkCmdType(QString &ss);
     const QVector<Persist>& getPersist() { return m_persist;}
 private:

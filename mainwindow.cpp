@@ -18,8 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_adb = new adb_online();
     m_line_dialog = new goto_line_dialog();
     m_persist_settings = new persist_settings();
-    QObject::connect(m_adb, SIGNAL(processLogOnline(QByteArray)),
-                     m_tablectrl, SLOT(processLogOnline(QByteArray)));
+    QObject::connect(m_adb, SIGNAL(processLogOnline(QByteArray, int)),
+                     m_tablectrl, SLOT(processLogOnline(QByteArray, int)));
     QObject::connect(ui->msg_combobox->lineEdit(), SIGNAL(returnPressed()),
                      this, SLOT(logFilterReturnPress()));
     QObject::connect(ui->tag_edit, SIGNAL(returnPressed()),
@@ -62,14 +62,13 @@ MainWindow::~MainWindow()
 void MainWindow::openLog(){
     qDebug() << "openLog" << endl;
     this->android_stop();
-    QString filename = QFileDialog::getOpenFileName(this, tr("open log"), ".", tr("log file (*.txt *.log)"));
+    QString filename = QFileDialog::getOpenFileName(this, tr("open log"), ".", tr("log file (*.txt *.log *log*)"));
     if (filename.isEmpty()) {
         qDebug() << "file is empty()" << endl;
         return;
     }
     this->setLogTitle(filename);
     m_tablectrl->processLog(filename);
-
 }
 
 void MainWindow::adbConnect() {

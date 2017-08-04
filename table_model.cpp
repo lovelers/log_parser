@@ -22,10 +22,10 @@ QVariant table_model::headerData(int section, Qt::Orientation orientation, int r
         return m_log_config->getKeys().at(section);
     }
     if (orientation == Qt::Vertical) {
-        if (filter_line_info.size() < section)
+        if (filter_data.size() < section)
             return QVariant(-1);
         else
-            return QVariant(filter_line_info.at(section));
+            return QVariant(filter_data.at(section).line);
     }
     return QVariant();
 }
@@ -40,7 +40,22 @@ QVariant table_model::data(const QModelIndex &index, int role) const
         return QVariant();
 
     if (role == Qt::DisplayRole) {
-        return  filter_data.at(index.row()).at(index.column());
+        switch(index.column()) {
+        case TABLE_COL_TYPE_DATE:
+            return filter_data.at(index.row()).date;
+        case TABLE_COL_TYPE_TIME:
+            return filter_data.at(index.row()).time;
+        case TABLE_COL_TYPE_LEVEL:
+            return filter_data.at(index.row()).level;
+        case TABLE_COL_TYPE_PID:
+            return filter_data.at(index.row()).pid;
+        case TABLE_COL_TYPE_TID:
+            return filter_data.at(index.row()).tid;
+        case TABLE_COL_TYPE_TAG:
+            return filter_data.at(index.row()).tag;
+        case TABLE_COL_TYPE_MSG:
+            return filter_data.at(index.row()).msg;
+        }
     }
     return QVariant();
 }
@@ -57,13 +72,13 @@ bool table_model::setData(const QModelIndex &index, const QVariant &value, int r
     return false;
 }
 
-void table_model::appendLogData(const QVector<QString> &data) {
+void table_model::appendLogData(const log_info_per_line_t &data) {
     this->beginResetModel();
     log_data.append(data);
     this->endResetModel();
 }
 
-void table_model::setLogData(const QVector<QVector<QString>> &data) {
+void table_model::setLogData(const log_info_t &data) {
     log_data = data;
 }
 
@@ -71,46 +86,39 @@ void table_model::clearData() {
     log_data.clear();
     this->beginResetModel();
     filter_data.clear();
-    filter_line_info.clear();
     this->endResetModel();
 }
 
-QVector<QVector<QString>> * table_model::getLogDataPtr() {
+log_info_t * table_model::getLogDataPtr() {
     return &log_data;
 }
 
-QVector<QVector<QString>> * table_model::getLogFilterData() {
+log_info_t * table_model::getLogFilterDataPtr() {
     return &filter_data;
 }
 
-QVector<qint32> * table_model::getLogFilterLine() {
-    return &filter_line_info;
-}
 
-void table_model::setLogFilterData(const QVector<QVector<QString>> &data,
-                                   const QVector<qint32> &line_info) {
+void table_model::setLogFilterData(const log_info_t &data) {
     this->beginResetModel();
     filter_data = data;
-    filter_line_info = line_info;
     this->endResetModel();
 }
 
-void table_model::appendLogFilterData(const QVector<QString> &data, int line) {
+void table_model::appendLogFilterData(const log_info_per_line_t &data) {
     this->beginResetModel();
     filter_data.append(data);
-    filter_line_info.append(line);
     this->endResetModel();
 }
 
 QModelIndex table_model::getModexIndex(int line, int col) {
     int s_start = 0;
-    int s_end = filter_line_info.size() -1;
+    int s_end = filter_data.size() -1;
     int s_mid = s_end / 2;
     int dir = 0;
-    if (filter_line_info.isEmpty()) return this->index(0,col);
-    if (line > filter_line_info.at(s_end)) return this->index(s_end,col);
+    if (filter_data.isEmpty()) return this->index(0,col);
+    if (line > filter_data.at(s_end).line) return this->index(s_end,col);
     while (true) {
-        dir = line - filter_line_info.at(s_mid);
+        dir = line - filter_data.at(s_mid).line;
         if (dir > 0) {
             s_start = s_mid;
             s_mid = (s_start + s_end) / 2;
