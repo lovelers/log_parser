@@ -48,7 +48,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    delete m_line_dialog;
     delete ui;
+    delete m_persist_settings;
+    check_adb_device_tiemr.stop();
+
     if (m_tablectrl) {
         delete m_tablectrl;
         m_tablectrl = NULL;
@@ -250,7 +254,7 @@ void MainWindow::android_devices_select() {
     static QStringList pre_list;
     if (m_adb) {
         QStringList list = m_adb->checkDevices();
-        if (list.size() == 0)
+        if (list.isEmpty() || list.size() == 0)
             list << "adb disconnect";
         bool needUpdate = false;
         if (list.size() == pre_list.size()) {

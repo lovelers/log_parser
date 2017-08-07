@@ -183,7 +183,7 @@ void adb_online::log_load_thread::run() {
             if (log_file.isWritable()) {
                 log_file.write(str);
             }
-            if (adb && adb->getCurType() != ANDROID_PAUSE) emit adb->processLogOnline(str, line_count++);
+            if (adb && adb->getCurType() != ANDROID_PAUSE) emit adb->processLogOnline(str, ++line_count);
         }
     }
 }

@@ -15,3 +15,7 @@ void goto_line_dialog::returnKeyPressed() {
     emit sendLineNumber(ui->number_edit->text().toInt());
     this->close();
 }
+
+goto_line_dialog::~goto_line_dialog() {
+    delete ui;
+}

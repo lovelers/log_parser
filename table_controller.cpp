@@ -17,7 +17,9 @@ table_controller::table_controller(QTableView *view) {
     m_model = new table_model();
     m_delegate = new table_item_delegate();
 
-
+    // here set fixed verital header width to disable the resize of it.
+    // it can improve the tableview performance.
+    m_view->verticalHeader()->setFixedWidth(50);
     m_view->setModel(m_model);
     m_view->setItemDelegate(m_delegate);
     m_view->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -52,9 +54,14 @@ table_controller::~table_controller() {
     if (m_show_more) delete m_show_more;
     if (m_show_more_log) delete m_show_more_log;
     if (m_menu) delete m_menu;
-    if (m_scroll_timer) delete m_scroll_timer;
+    if (m_scroll_timer) {
+        m_scroll_timer->stop();
+        delete m_scroll_timer;
+    }
 
-    if (m_delegate) delete m_delegate;
+    if (m_delegate) {
+        delete m_delegate;
+    }
     if (m_model) delete m_model;
 }
 
@@ -148,6 +155,7 @@ bool table_controller::isLevelVisible(const QString &leve) {
 }
 
 void table_controller::processFilter(const log_filter_t& filter) {
+    m_filter_mutex.lock();
     m_log_filter = filter;
 
     log_info_t *logData = m_model->getLogDataPtr();
@@ -171,6 +179,7 @@ void table_controller::processFilter(const log_filter_t& filter) {
     m_model->setLogFilterData(filterData);
     m_delegate->updateMsgFilter(m_log_filter.msg);
     qDebug() << "filter time diff " << stime.elapsed();
+    m_filter_mutex.unlock();
 }
 
 
@@ -256,7 +265,7 @@ void table_controller::showAllLogs() {
 
 void table_controller::processLogOnline(const QByteArray &bArray, int line_count) {
     //qDebug() << bArray;
-
+    m_filter_mutex.lock();
     log_info_per_line_t vec = m_logConfig->processPerLine(bArray);
     vec.line = line_count;
     m_model->appendLogData(vec);
@@ -264,6 +273,7 @@ void table_controller::processLogOnline(const QByteArray &bArray, int line_count
             &&isFilterMatched(vec)) {
         m_model->appendLogFilterData(vec);
     }
+    m_filter_mutex.unlock();
 
 }
 
@@ -329,13 +339,14 @@ void table_controller::showMore() {
         return;
     }
     int line = m_model->getLogFilterDataPtr()->at(row).line;
-    int start = line - 100;
+    int start = line - 200;
     if (start < 0) start = 0;
 
-    int end = line + 100;
+    int end = line + 200;
     if (end > logDataPtr->size()) end = logDataPtr->size();
     if (m_show_more_log) m_show_more_log->clearLog();
-
+    qDebug() << "row = " << row
+             << "line= " << line;
     for(int i = start; i < end; i++) {
         if (m_show_more_log) {
             QString str;
@@ -354,6 +365,7 @@ void table_controller::showMore() {
             str.append(logDataPtr->at(i).msg);
             str.append("\t");
             m_show_more_log->appendLog(str);
+            qDebug() << str;
         }
     }
     m_show_more_log->scrollToLine(line-start);

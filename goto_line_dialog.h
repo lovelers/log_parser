@@ -13,6 +13,7 @@ class goto_line_dialog : public QDialog
 public:
     explicit goto_line_dialog(QWidget *parent = nullptr);
     int returnLineNumber();
+    ~goto_line_dialog();
 private:
     Ui::GotoLineDialog *ui;
     int line_number;

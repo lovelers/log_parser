@@ -16,6 +16,7 @@
 #include <QTimer>
 #include <QFont>
 #include <QMenu>
+#include <QMutex>
 #include "show_more_log.h"
 
 typedef struct {
@@ -50,7 +51,7 @@ private:
     bool isFilterMatched(const log_info_per_line_t &str);
 
     QTimer *m_scroll_timer;
-
+    QMutex m_filter_mutex;
 public:
     table_controller(QTableView *table);
     ~table_controller();
