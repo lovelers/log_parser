@@ -1,5 +1,4 @@
 #include "log_config.h"
-#include "config.h"
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -51,7 +50,7 @@ log_config::log_config()
     }
 }
 
-log_info_per_line_t log_config::processPerLine(const QString &&str, cmd_type type){
+log_info_per_line_t log_config::processPerLine(const QString &str, cmd_type type){
     log_info_per_line_t line;
     int delimiter = -1;
     switch (type) {

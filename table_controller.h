@@ -18,6 +18,7 @@
 #include <QMenu>
 #include <QMutex>
 #include "show_more_log.h"
+#include "config.h"
 
 typedef struct {
     QStringList msg;
@@ -45,26 +46,33 @@ private:
     qint32 m_level_visible;
 
     log_filter_t m_log_filter;
+    QMutex m_log_filter_lock;
+
+    ANDROID_ONLINE_CMD m_android_online_cmd;
+    bool m_android_online_filter_updated;
+    bool m_android_online_level_updated;
+    void processFilterPrivate();
     void updateLogLevelVisible();
     void updateColumnVisible(TABLE_COL_TYPE type, bool visible);
     inline bool isLevelVisible(const QString & str);
     bool isFilterMatched(const log_info_per_line_t &str);
 
     QTimer *m_scroll_timer;
-    QMutex m_filter_mutex;
+
 public:
     table_controller(QTableView *table);
     ~table_controller();
     bool checkConfigValid();
-    bool processLog(QString &filename);
+    bool processLogFromFile(QString &filename);
 
     void setColumnVisible(TABLE_COL_TYPE type, bool visiable);
     void setLogLevelVisible(LOG_LEVEL type, bool visiable);
 
-    void processFilter(const log_filter_t& filter);
+    void setFilter(const log_filter_t& filter);
 
     void showAllLogs();
 
+    void setAdbCmd(ANDROID_ONLINE_CMD cmd);
     void android_run();
     void android_stop();
     void android_clear();
@@ -75,7 +83,7 @@ public:
 
     void recieveLineNumber(int line);
 public slots:
-    void processLogOnline(const QByteArray &bArray, int line_count);
+    void processLogOnline(const QStringList &list, int line_count, int count);
     void scrollToBottom();
     void tableCustomMenuRequest(QPoint point);
     void showMore();

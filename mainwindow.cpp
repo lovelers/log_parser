@@ -9,6 +9,7 @@
 #include <QStringList>
 #include <QString>
 #include "goto_line_dialog.h"
+#include "config.h"
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -18,8 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_adb = new adb_online();
     m_line_dialog = new goto_line_dialog();
     m_persist_settings = new persist_settings();
-    QObject::connect(m_adb, SIGNAL(processLogOnline(QByteArray, int)),
-                     m_tablectrl, SLOT(processLogOnline(QByteArray, int)));
+    QObject::connect(m_adb, SIGNAL(processLogOnline(QStringList, int, int)),
+                     m_tablectrl, SLOT(processLogOnline(QStringList, int, int)));
     QObject::connect(ui->msg_combobox->lineEdit(), SIGNAL(returnPressed()),
                      this, SLOT(logFilterReturnPress()));
     QObject::connect(ui->tag_edit, SIGNAL(returnPressed()),
@@ -72,7 +73,7 @@ void MainWindow::openLog(){
         return;
     }
     this->setLogTitle(filename);
-    m_tablectrl->processLog(filename);
+    m_tablectrl->processLogFromFile(filename);
 }
 
 void MainWindow::adbConnect() {
@@ -146,7 +147,7 @@ void MainWindow::logFilterReturnPress() {
     qDebug() << "filter tag:" << filter.tag;
     qDebug() << "filter pid:" << filter.pid;
     qDebug() << "filter tid:" << filter.tid;
-    m_tablectrl->processFilter(filter);
+    m_tablectrl->setFilter(filter);
     //ui->TableView->setFocus();
 }
 
@@ -283,7 +284,7 @@ void MainWindow::android_run() {
         m_adb->setCmd(ANDROID_RUN);
     }
     if (m_tablectrl) {
-        m_tablectrl->android_run();
+        m_tablectrl->setAdbCmd(ANDROID_RUN);
     }
     this->ui->android_run_btn->setEnabled(false);
     this->ui->android_pause_resume_btn->setEnabled(true);
@@ -299,7 +300,7 @@ void MainWindow::android_pause_resume() {
             m_adb->setCmd(ANDROID_PAUSE);
         }
         if (m_tablectrl) {
-            m_tablectrl->android_pause();
+            m_tablectrl->setAdbCmd(ANDROID_PAUSE);
         }
         ui->android_pause_resume_btn->setText("Resume");
     } else {
@@ -307,7 +308,7 @@ void MainWindow::android_pause_resume() {
             m_adb->setCmd(ANDROID_RESUME);
         }
         if (m_tablectrl) {
-            m_tablectrl->android_resume();
+            m_tablectrl->setAdbCmd(ANDROID_RESUME);
         }
         ui->android_pause_resume_btn->setText("Pause");
     }
@@ -322,7 +323,7 @@ void MainWindow::android_stop() {
         m_adb->setCmd(ANDROID_STOP);
     }
     if (m_tablectrl) {
-        m_tablectrl->android_stop();
+        m_tablectrl->setAdbCmd(ANDROID_STOP);
     }
     this->ui->android_run_btn->setEnabled(true);
     ui->android_pause_resume_btn->setText("Pause");
@@ -338,7 +339,7 @@ void MainWindow::android_clear() {
         m_adb->setCmd(ANDROID_CLEAR);
     }
     if (m_tablectrl) {
-        m_tablectrl->android_clear();
+        m_tablectrl->setAdbCmd(ANDROID_CLEAR);
     }
 }
 

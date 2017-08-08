@@ -7,5 +7,14 @@
 #define MIN(x, y) (x) > (y) ? (y) : (x)
 #define MAX(x, y) (x) > (y) ? (x) : (y)
 
+typedef enum {
+    ANDROID_UNKNOWN,
+    ANDROID_RUN,
+    ANDROID_CLEAR,
+    ANDROID_STOP,
+    ANDROID_RESUME,
+    ANDROID_PAUSE,
+} ANDROID_ONLINE_CMD;
+
 
 #endif // CONFIG_H

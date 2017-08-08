@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QAbstractTableModel>
+#include <QMutex>
 #include "log_config.h"
 
 
@@ -29,6 +30,8 @@ private:
     log_config *m_log_config;
     log_info_t log_data;
     log_info_t filter_data;
+    QMutex filter_data_lock;
+    QMutex log_data_lock;
 };
 
 #endif // TABLE_MODEL_H

@@ -4,6 +4,8 @@
 #include <QDir>
 #include <QTime>
 #include <QDate>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 adb_online::adb_online()
 {
     m_process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
@@ -23,7 +25,7 @@ adb_online::adb_online()
 
 }
 
-void adb_online::setCmd(UI_CMD_TYPE type) {
+void adb_online::setCmd(ANDROID_ONLINE_CMD type) {
     qDebug() << __func__ << "type: " << type;
     if (m_curType == type) return;
     switch (type) {
@@ -118,7 +120,10 @@ void adb_online::processError(QProcess::ProcessError processError){
 void adb_online::readReady() {
     if (m_logcat_thread) {
         //logcat_thread = new log_load_thread(&m_process, m_text_edit);}
-        m_logcat_thread->start();
+        if (m_logcat_thread->isRunning() == false) {
+            m_logcat_thread->start();
+        }
+        //qDebug() << "goto readReady";
     }
 }
 
@@ -177,13 +182,19 @@ void adb_online::log_load_thread::setQProcess(QProcess *process) {
 
 void adb_online::log_load_thread::run() {
     if (process) {
-        QByteArray str;
+        QByteArray arr;
         while (!process->atEnd() && process->isReadable()) {
-            str =  process->readLine();
+            arr =  process->readAll();
             if (log_file.isWritable()) {
-                log_file.write(str);
+                log_file.write(arr);
             }
-            if (adb && adb->getCurType() != ANDROID_PAUSE) emit adb->processLogOnline(str, ++line_count);
+            QString str(arr);
+            QStringList list = str.split("\n");
+            list.removeLast();
+            if (adb && adb->getCurType() != ANDROID_PAUSE) {
+                emit adb->processLogOnline(list, line_count, list.size());
+                line_count += list.size();
+            }
         }
     }
 }

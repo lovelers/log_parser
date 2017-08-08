@@ -74,18 +74,26 @@ bool table_model::setData(const QModelIndex &index, const QVariant &value, int r
 
 void table_model::appendLogData(const log_info_per_line_t &data) {
     this->beginResetModel();
+    log_data_lock.lock();
     log_data.append(data);
+    log_data_lock.unlock();
     this->endResetModel();
 }
 
 void table_model::setLogData(const log_info_t &data) {
+    log_data_lock.lock();
     log_data = data;
+    log_data_lock.unlock();
 }
 
 void table_model::clearData() {
+    log_data_lock.lock();
     log_data.clear();
+    log_data_lock.unlock();
     this->beginResetModel();
+    filter_data_lock.lock();
     filter_data.clear();
+    filter_data_lock.unlock();
     this->endResetModel();
 }
 
@@ -100,13 +108,17 @@ log_info_t * table_model::getLogFilterDataPtr() {
 
 void table_model::setLogFilterData(const log_info_t &data) {
     this->beginResetModel();
+    filter_data_lock.lock();
     filter_data = data;
+    filter_data_lock.unlock();
     this->endResetModel();
 }
 
 void table_model::appendLogFilterData(const log_info_per_line_t &data) {
     this->beginResetModel();
+    filter_data_lock.lock();
     filter_data.append(data);
+    filter_data_lock.unlock();
     this->endResetModel();
 }
 

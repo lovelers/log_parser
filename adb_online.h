@@ -6,15 +6,7 @@
 #include <QTextEdit>
 #include <QDebug>
 #include <QFile>
-typedef enum {
-    ANDROID_UNKNOWN,
-    ANDROID_RUN,
-    ANDROID_CLEAR,
-    ANDROID_STOP,
-    ANDROID_RESUME,
-    ANDROID_PAUSE,
-} UI_CMD_TYPE;
-
+#include "config.h"
 
 class adb_online : public QObject
 {
@@ -23,8 +15,8 @@ class adb_online : public QObject
 public:
     adb_online();
     ~adb_online();
-    void setCmd(UI_CMD_TYPE type);
-    UI_CMD_TYPE getCurType() { return m_curType;}
+    void setCmd(ANDROID_ONLINE_CMD type);
+    ANDROID_ONLINE_CMD getCurType() { return m_curType;}
     class log_load_thread : public QThread {
     public:
         log_load_thread(adb_online *adb);
@@ -41,7 +33,7 @@ public:
     };
 private:
     QProcess m_process;
-    UI_CMD_TYPE m_curType;
+    ANDROID_ONLINE_CMD m_curType;
     log_load_thread *m_logcat_thread;
     void android_run();
     void android_stop();
@@ -56,7 +48,7 @@ public slots:
     void readReady();
 
 signals:
-    void processLogOnline(const QByteArray &bArray,int line_count);
+    void processLogOnline(const QStringList &list,int line_count, int count);
     void setLogTitle(QString path);
 
 public:

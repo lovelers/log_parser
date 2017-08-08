@@ -2,7 +2,7 @@
 #define LOG_CONFIG_H
 #include <QVector>
 #include <QString>
-
+#include "config.h"
 class log_config;
 
 
@@ -65,7 +65,7 @@ public:
     bool isConfigValid() const { return m_isValid; }
     const QVector<QString> &getKeys() { return m_keys;}
     const QVector<qint16> &getWidths() { return m_widths;}
-    static log_info_per_line_t processPerLine(const QString &&str, cmd_type type = LOGCAT_THREADTIME);
+    static log_info_per_line_t processPerLine(const QString &str, cmd_type type = LOGCAT_THREADTIME);
     static cmd_type checkCmdType(QString &ss);
     const QVector<Persist>& getPersist() { return m_persist;}
 private:

@@ -48,6 +48,10 @@ table_controller::table_controller(QTableView *view) {
                      this, SLOT(showMore()));
     m_menu->addAction(m_show_more);
     m_show_more_log = new show_more_log;
+
+    m_android_online_cmd = ANDROID_STOP;
+    m_android_online_level_updated = false;
+    m_android_online_filter_updated = false;
 }
 
 table_controller::~table_controller() {
@@ -69,7 +73,7 @@ bool table_controller::checkConfigValid() {
     return m_logConfig->isConfigValid();
 }
 
-bool table_controller::processLog(QString &filename) {
+bool table_controller::processLogFromFile(QString &filename) {
     qDebug()<< "filename = " << filename << endl;
     QTime stime;
     stime.start();
@@ -132,7 +136,12 @@ void table_controller::setLogLevelVisible(LOG_LEVEL level, bool visible) {
 void table_controller::updateLogLevelVisible() {
     QTime stime;
     stime.start();
-    processFilter(m_log_filter);
+    //processFilter(m_log_filter);
+    if (m_android_online_cmd == ANDROID_STOP) {
+        processFilterPrivate();
+    } else {
+        m_android_online_level_updated = true;
+    }
     qDebug() << "row hidden time diff: " << stime.elapsed() << endl;
 }
 
@@ -154,10 +163,26 @@ bool table_controller::isLevelVisible(const QString &leve) {
     return false;
 }
 
-void table_controller::processFilter(const log_filter_t& filter) {
-    m_filter_mutex.lock();
-    m_log_filter = filter;
-
+void table_controller::setFilter(const log_filter_t& filter) {
+    if (filter.line != m_log_filter.line ||
+            filter.pid != m_log_filter.pid ||
+            filter.tid != m_log_filter.tid ||
+            filter.tag != m_log_filter.tag ||
+            filter.msg != m_log_filter.msg) {
+        m_log_filter_lock.lock();
+        m_log_filter = filter;
+        m_log_filter_lock.unlock();
+        if (m_android_online_cmd == ANDROID_STOP) {
+            processFilterPrivate();
+        } else {
+            m_android_online_filter_updated = true;
+        }
+        qDebug() << "update nwe filter" << endl;
+    }
+}
+void table_controller::processFilterPrivate() {
+    m_log_filter_lock.lock();
+    qDebug() << "start process Filter Private" << endl;
     log_info_t *logData = m_model->getLogDataPtr();
     if (logData->isEmpty()) return;
 
@@ -179,7 +204,7 @@ void table_controller::processFilter(const log_filter_t& filter) {
     m_model->setLogFilterData(filterData);
     m_delegate->updateMsgFilter(m_log_filter.msg);
     qDebug() << "filter time diff " << stime.elapsed();
-    m_filter_mutex.unlock();
+    m_log_filter_lock.unlock();
 }
 
 
@@ -263,43 +288,54 @@ void table_controller::showAllLogs() {
     m_delegate->updateMsgFilter(m_log_filter.msg);
 }
 
-void table_controller::processLogOnline(const QByteArray &bArray, int line_count) {
+void table_controller::processLogOnline(const QStringList &list, int line_count, int count) {
     //qDebug() << bArray;
-    m_filter_mutex.lock();
-    log_info_per_line_t vec = m_logConfig->processPerLine(bArray);
-    vec.line = line_count;
-    m_model->appendLogData(vec);
-    if (isLevelVisible(vec.level)
-            &&isFilterMatched(vec)) {
-        m_model->appendLogFilterData(vec);
+    if (m_android_online_cmd != ANDROID_STOP) {
+        if (m_android_online_filter_updated ||
+                m_android_online_level_updated) {
+            processFilterPrivate();
+            m_android_online_filter_updated = false;
+            m_android_online_level_updated = false;
+            qDebug() << "process Log On line for previous filter info";
+        }
     }
-    m_filter_mutex.unlock();
 
+    for (int i = 0; i < count; i++) {
+        log_info_per_line_t vec = m_logConfig->processPerLine(list.at(i));
+        vec.line = line_count + i + 1;
+        //qDebug() << "goto ehre" << list.at(i);
+        m_model->appendLogData(vec);
+        if (isLevelVisible(vec.level)
+                &&isFilterMatched(vec)) {
+            m_model->appendLogFilterData(vec);
+        }
+    }
 }
 
-void table_controller::android_run() {
-    m_model->clearData();
-    m_scroll_timer->start(10);
+void table_controller::setAdbCmd(ANDROID_ONLINE_CMD cmd) {
+    if (cmd != m_android_online_cmd) {
+        qDebug() << "new cmd = " << cmd
+                 << "cmd = " << m_android_online_cmd;
+        m_android_online_cmd = cmd;
+        switch (cmd) {
+        case ANDROID_CLEAR:
+            break;
+        case ANDROID_PAUSE:
+            m_scroll_timer->stop();
+            break;
+        case ANDROID_RESUME:
+            m_scroll_timer->start(10);
+            break;
+        case ANDROID_RUN:
+            m_scroll_timer->start(10);
+            break;
+        case ANDROID_STOP:
+        default:
+            m_scroll_timer->stop();
+            break;
+        }
+    }
 }
-
-void table_controller::android_resume() {
-    //
-    m_scroll_timer->start(10);
-}
-
-void table_controller::android_pause() {
-    m_scroll_timer->stop();
-}
-
-void table_controller::android_stop() {
-    //
-    m_scroll_timer->stop();
-}
-
-void table_controller::android_clear() {
-    m_model->clearData();
-}
-
 
 
 void table_controller::scrollToBottom() {
