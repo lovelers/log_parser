@@ -67,7 +67,8 @@ table_controller::~table_controller() {
     }
 
     if (m_log_online) {
-        m_log_online->exit();
+        m_log_online->terminate();
+        m_log_online->wait();
         m_log_online->destroyed();
         delete m_log_online;
     }

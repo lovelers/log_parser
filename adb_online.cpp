@@ -107,6 +107,7 @@ void adb_online::processError(QProcess::ProcessError processError){
 
 adb_online::~adb_online() {
     m_process.kill();
+    m_process.waitForFinished();
     m_process.destroyed();
 }
 
@@ -130,7 +131,9 @@ QStringList adb_online::checkDevices() {
         //qDebug() << str;
     } while (true);
     //qDebug() << list;
-    process.close();
+    process.kill();
+    process.waitForFinished();
+    process.destroyed();
     return list;
 }
 
@@ -139,7 +142,7 @@ bool adb_online::adbRootRemount() {
     process.start("adb", QStringList() << "root");
     process.waitForFinished(2000);
     QString adbroot = process.readAll();
-    process.close();
+    process.destroyed();
 #if 0
     process.start("adb", QStringList() << "remount");
     process.waitForFinished(2000);
@@ -166,5 +169,6 @@ QString adb_online::adbProperity(QString key, QString value) {
     QString getprop = process.readAll().simplified();
     process.close();
     qDebug() << setprop << getprop << endl;
+    process.destroyed();
     return getprop;
 }

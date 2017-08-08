@@ -51,11 +51,14 @@ MainWindow::~MainWindow()
     delete ui;
     delete m_persist_settings;
     check_adb_device_tiemr.stop();
+
     if (m_tablectrl) {
+        m_tablectrl->setAdbCmd(ANDROID_STOP);
         delete m_tablectrl;
         m_tablectrl = NULL;
     }
     if (m_adb) {
+        m_adb->setCmd(ANDROID_STOP);
         delete m_adb;
         m_adb = NULL;
     }
