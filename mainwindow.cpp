@@ -19,8 +19,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_adb = new adb_online();
     m_line_dialog = new goto_line_dialog();
     m_persist_settings = new persist_settings();
-    QObject::connect(m_adb, SIGNAL(processLogOnline(QStringList, int, int)),
-                     m_tablectrl, SLOT(processLogOnline(QStringList, int, int)));
     QObject::connect(ui->msg_combobox->lineEdit(), SIGNAL(returnPressed()),
                      this, SLOT(logFilterReturnPress()));
     QObject::connect(ui->tag_edit, SIGNAL(returnPressed()),
@@ -30,8 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->tid_edit, SIGNAL(returnPressed()),
                      this, SLOT(logFilterReturnPress()));
 
-    QObject::connect(m_adb, SIGNAL(setLogTitle(QString)),
-                     this, SLOT(setLogTitle(QString)));
+    QObject::connect(m_adb, SIGNAL(logOnlinePath(QString)),
+                     this, SLOT(logOnlinePath(QString)));
 
     m_line_dialog->setModal(true);
     QObject::connect(m_line_dialog, SIGNAL(sendLineNumber(int)),
@@ -53,7 +51,6 @@ MainWindow::~MainWindow()
     delete ui;
     delete m_persist_settings;
     check_adb_device_tiemr.stop();
-
     if (m_tablectrl) {
         delete m_tablectrl;
         m_tablectrl = NULL;
@@ -72,7 +69,7 @@ void MainWindow::openLog(){
         qDebug() << "file is empty()" << endl;
         return;
     }
-    this->setLogTitle(filename);
+    this->setWindowTitle(m_window_title + ":" + filename);
     m_tablectrl->processLogFromFile(filename);
 }
 
@@ -343,8 +340,9 @@ void MainWindow::android_clear() {
     }
 }
 
-void MainWindow::setLogTitle(QString path) {
-    this->setWindowTitle(m_window_title+ " : " + path);
+void MainWindow::logOnlinePath(QString path) {
+    this->setWindowTitle(m_window_title + " : " + path);
+    m_tablectrl->setOnLineLogFile(path);
 }
 
 void MainWindow::table_view_double_clicked(QModelIndex index) {

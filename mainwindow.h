@@ -82,7 +82,7 @@ public Q_SLOTS:
     void android_stop();
     void android_clear();
 
-    void setLogTitle(QString path);
+    void logOnlinePath(QString path);
 
     void table_view_double_clicked(QModelIndex index);
 

@@ -28,6 +28,22 @@ typedef struct {
     qint32 line;
 } log_filter_t;
 
+class online_log_process : public QThread {
+
+    Q_OBJECT
+
+public:
+    online_log_process();
+    void setLogPath(QString path);
+    void updateLogOnlineCmd(ANDROID_ONLINE_CMD cmd);
+signals:
+    void processLogOnline(const QString str, int line_count);
+private:
+    void run();
+    QString m_path;
+    ANDROID_ONLINE_CMD m_cmd;
+};
+
 class table_controller : public QObject {
 
     Q_OBJECT
@@ -47,6 +63,7 @@ private:
 
     log_filter_t m_log_filter;
     QMutex m_log_filter_lock;
+    online_log_process *m_log_online;
 
     ANDROID_ONLINE_CMD m_android_online_cmd;
     bool m_android_online_filter_updated;
@@ -58,6 +75,12 @@ private:
     bool isFilterMatched(const log_info_per_line_t &str);
 
     QTimer *m_scroll_timer;
+
+    void android_run();
+    void android_stop();
+    void android_clear();
+    void android_resume();
+    void android_pause();
 
 public:
     table_controller(QTableView *table);
@@ -73,20 +96,19 @@ public:
     void showAllLogs();
 
     void setAdbCmd(ANDROID_ONLINE_CMD cmd);
-    void android_run();
-    void android_stop();
-    void android_clear();
-    void android_resume();
-    void android_pause();
+
+
 
     void setFont(const QFont &font);
 
     void recieveLineNumber(int line);
 public slots:
-    void processLogOnline(const QStringList &list, int line_count, int count);
+    void processLogOnline(QString str, int line_count);
     void scrollToBottom();
     void tableCustomMenuRequest(QPoint point);
     void showMore();
+
+    void setOnLineLogFile(QString path);
 };
 
 #endif // table_controller_H

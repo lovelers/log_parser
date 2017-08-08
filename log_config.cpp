@@ -66,7 +66,6 @@ log_info_per_line_t log_config::processPerLine(const QString &str, cmd_type type
         logItem.append(str.mid(33, delimiter-33)); // Tag
         logItem.append(str.mid(delimiter+1).simplified()); //msg
 #else
-        if(str.isNull() || str.isEmpty()) break;
         line.date = str.mid(0,5);
         line.time = str.mid(6,12);
         line.pid = str.mid(19,5);
@@ -74,7 +73,7 @@ log_info_per_line_t log_config::processPerLine(const QString &str, cmd_type type
         line.level = str.mid(31,1);
         delimiter = str.indexOf(QChar(':'), 33);
         line.tag = str.mid(33, delimiter - 33);
-        line.msg = str.mid(delimiter+1).trimmed();
+        line.msg = str.mid(delimiter+1);
 #endif
         break;
     default:
