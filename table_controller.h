@@ -56,6 +56,9 @@ private:
 
     QMenu *m_menu;
     QAction *m_show_more;
+    QAction *m_show_more_same_tag;
+    QAction *m_show_more_same_pid;
+    QAction *m_show_more_same_tid;
     show_more_log *m_show_more_log;
 
     qint32 m_column_visible;
@@ -107,6 +110,9 @@ public slots:
     void scrollToBottom();
     void tableCustomMenuRequest(QPoint point);
     void showMore();
+    void showMoreSameTag();
+    void showMoreSamePid();
+    void showMoreSameTid();
 
     void setOnLineLogFile(QString path);
 };

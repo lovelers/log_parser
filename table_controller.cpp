@@ -43,10 +43,23 @@ table_controller::table_controller(QTableView *view) {
 
     //show more log
     m_menu =new QMenu(m_view);
-    m_show_more = new QAction("show more...");
+    m_show_more = new QAction("show more log");
+    m_show_more_same_tag = new QAction("show more log with same tag");
+    m_show_more_same_tid = new QAction("show more log with same tid");
+    m_show_more_same_pid = new QAction("show more log with same pid");
     QObject::connect(m_show_more, SIGNAL(triggered()),
                      this, SLOT(showMore()));
+    QObject::connect(m_show_more_same_tag, SIGNAL(triggered(bool)),
+                     this, SLOT(showMoreSameTag()));
+    QObject::connect(m_show_more_same_pid, SIGNAL(triggered(bool)),
+                     this, SLOT(showMoreSamePid()));
+    QObject::connect(m_show_more_same_tid, SIGNAL(triggered(bool)),
+                     this, SLOT(showMoreSameTid()));
+
     m_menu->addAction(m_show_more);
+    m_menu->addAction(m_show_more_same_tag);
+    m_menu->addAction(m_show_more_same_pid);
+    m_menu->addAction(m_show_more_same_tid);
     m_show_more_log = new show_more_log;
 
     m_log_online = new online_log_process();
@@ -59,7 +72,11 @@ table_controller::table_controller(QTableView *view) {
 
 table_controller::~table_controller() {
     if (m_show_more) delete m_show_more;
+    if (m_show_more_same_tag) delete m_show_more_same_tag;
+    if (m_show_more_same_pid) delete m_show_more_same_pid;
+    if (m_show_more_same_tid) delete m_show_more_same_tid;
     if (m_show_more_log) delete m_show_more_log;
+
     if (m_menu) delete m_menu;
     if (m_scroll_timer) {
         m_scroll_timer->stop();
@@ -97,7 +114,7 @@ bool table_controller::processLogFromFile(QString &filename) {
         QTextStream in(file);
         int line_count = 1;
         while (!in.atEnd()) {
-            log_info_per_line = m_logConfig->processPerLine(in.readLine());
+            log_info_per_line = m_logConfig->processPerLine(in.readLine().trimmed());
             log_info_per_line.line = line_count++;
             if (isFilterMatched(log_info_per_line)) {
                 filterData.append(log_info_per_line);
@@ -380,20 +397,87 @@ void table_controller::showMore() {
     log_info_t more_log;
     if (row < 0 ||
             logDataPtr->size() == 0 ||
-            row > logDataPtr->size()) {
+            row > logDataPtr->size() ||
+            !m_show_more_log)
+    {
         return;
     }
-    int line = m_model->getLogFilterDataPtr()->at(row).line;
-    int start = line - 200;
-    if (start < 0) start = 0;
+    int line = m_model->getLogFilterDataPtr()->at(row).line -1;
+    qDebug() << "row = " << row << "line= " << line;
+    m_show_more_log->clearLog();
+    int front_count = 0;
+    int back_count = 0;
+    QStringList log;
+    for (int i = line; i > 0; --i) {
+        QString str;
+        str.append(QString::number(logDataPtr->at(i).line));
+        str.append("\t");
+        str.append(logDataPtr->at(i).time);
+        str.append("\t");
+        str.append(logDataPtr->at(i).level);
+        str.append("\t");
+        str.append(logDataPtr->at(i).pid);
+        str.append("\t");
+        str.append(logDataPtr->at(i).tid);
+        str.append("\t");
+        str.append(logDataPtr->at(i).tag);
+        str.append("\t");
+        str.append(logDataPtr->at(i).msg);
+        log.insert(0, str);
 
-    int end = line + 200;
-    if (end > logDataPtr->size()) end = logDataPtr->size();
-    if (m_show_more_log) m_show_more_log->clearLog();
-    qDebug() << "row = " << row
-             << "line= " << line;
-    for(int i = start; i < end; i++) {
-        if (m_show_more_log) {
+        if (++front_count == SHOW_MORE_LINES_THRESHOLD) {
+            break;
+        }
+    }
+    for (int i = line+1; i < logDataPtr->size(); ++i) {
+        QString str;
+        str.append(QString::number(logDataPtr->at(i).line));
+        str.append("\t");
+        str.append(logDataPtr->at(i).time);
+        str.append("\t");
+        str.append(logDataPtr->at(i).level);
+        str.append("\t");
+        str.append(logDataPtr->at(i).pid);
+        str.append("\t");
+        str.append(logDataPtr->at(i).tid);
+        str.append("\t");
+        str.append(logDataPtr->at(i).tag);
+        str.append("\t");
+        str.append(logDataPtr->at(i).msg);
+        log.append(str);
+        if (++back_count == SHOW_MORE_LINES_THRESHOLD) {
+            break;
+        }
+    }
+    m_show_more_log->appendLog(log.join("\n"));
+    m_show_more_log->scrollToLine(front_count);
+    m_show_more_log->show();
+    m_show_more_log->activateWindow();
+}
+
+void table_controller::showMoreSameTag() {
+    QModelIndex index =
+            m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
+    qint32 row = index.row();
+    log_info_t *logDataPtr =
+            m_model->getLogDataPtr();
+    log_info_t more_log;
+    if (row < 0 ||
+            logDataPtr->size() == 0 ||
+            row > logDataPtr->size() ||
+            !m_show_more_log)
+    {
+        return;
+    }
+    int line = m_model->getLogFilterDataPtr()->at(row).line -1;
+    qDebug() << "row = " << row << "line= " << line;
+    m_show_more_log->clearLog();
+    QString match_tag = logDataPtr->at(line).tag;
+    int front_count = 0;
+    int back_count = 0;
+    QStringList log;
+    for (int i  = line; i >= 0; --i) {
+        if (logDataPtr->at(i).tag.compare(match_tag) == 0) {
             QString str;
             str.append(QString::number(logDataPtr->at(i).line));
             str.append("\t");
@@ -408,12 +492,177 @@ void table_controller::showMore() {
             str.append(logDataPtr->at(i).tag);
             str.append("\t");
             str.append(logDataPtr->at(i).msg);
-            str.append("\t");
-            m_show_more_log->appendLog(str);
-            qDebug() << str;
+            log.insert(0, str);
+            if (++front_count == SHOW_MORE_LINES_THRESHOLD) {
+                break;
+            }
         }
     }
-    m_show_more_log->scrollToLine(line-start);
+    for (int i = line; i < logDataPtr->size(); ++i) {
+        if (logDataPtr->at(i).tag.compare(match_tag) == 0) {
+            QString str;
+            str.append(QString::number(logDataPtr->at(i).line));
+            str.append("\t");
+            str.append(logDataPtr->at(i).time);
+            str.append("\t");
+            str.append(logDataPtr->at(i).level);
+            str.append("\t");
+            str.append(logDataPtr->at(i).pid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tag);
+            str.append("\t");
+            str.append(logDataPtr->at(i).msg);
+            log.append(str);
+            if (++back_count == SHOW_MORE_LINES_THRESHOLD) {
+                break;
+            }
+
+        }
+    }
+    m_show_more_log->appendLog(log.join("\n"));
+    m_show_more_log->scrollToLine(front_count);
+    m_show_more_log->show();
+    m_show_more_log->activateWindow();
+}
+void table_controller::showMoreSamePid() {
+    QModelIndex index =
+            m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
+    qint32 row = index.row();
+    log_info_t *logDataPtr =
+            m_model->getLogDataPtr();
+    log_info_t more_log;
+    if (row < 0 ||
+            logDataPtr->size() == 0 ||
+            row > logDataPtr->size() ||
+            !m_show_more_log)
+    {
+        return;
+    }
+    int line = m_model->getLogFilterDataPtr()->at(row).line -1;
+    qDebug() << "row = " << row << "line= " << line;
+    m_show_more_log->clearLog();
+    QString match_pid = logDataPtr->at(line).pid;
+    int front_count = 0;
+    int back_count = 0;
+    QStringList log;
+    for (int i  = line; i >= 0; --i) {
+        if (logDataPtr->at(i).pid.compare(match_pid) == 0) {
+            QString str;
+            str.append(QString::number(logDataPtr->at(i).line));
+            str.append("\t");
+            str.append(logDataPtr->at(i).time);
+            str.append("\t");
+            str.append(logDataPtr->at(i).level);
+            str.append("\t");
+            str.append(logDataPtr->at(i).pid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tag);
+            str.append("\t");
+            str.append(logDataPtr->at(i).msg);
+            log.insert(0, str);
+            if (++front_count == SHOW_MORE_LINES_THRESHOLD) {
+                break;
+            }
+        }
+    }
+    for (int i = line; i < logDataPtr->size(); ++i) {
+        if (logDataPtr->at(i).pid.compare(match_pid) == 0) {
+            QString str;
+            str.append(QString::number(logDataPtr->at(i).line));
+            str.append("\t");
+            str.append(logDataPtr->at(i).time);
+            str.append("\t");
+            str.append(logDataPtr->at(i).level);
+            str.append("\t");
+            str.append(logDataPtr->at(i).pid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tag);
+            str.append("\t");
+            str.append(logDataPtr->at(i).msg);
+            log.append(str);
+            if (++back_count == SHOW_MORE_LINES_THRESHOLD) {
+                break;
+            }
+        }
+    }
+    m_show_more_log->appendLog(log.join("\n"));
+    m_show_more_log->scrollToLine(front_count);
+    m_show_more_log->show();
+    m_show_more_log->activateWindow();
+}
+void table_controller::showMoreSameTid() {
+    QModelIndex index =
+            m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
+    qint32 row = index.row();
+    log_info_t *logDataPtr =
+            m_model->getLogDataPtr();
+    log_info_t more_log;
+    if (row < 0 ||
+            logDataPtr->size() == 0 ||
+            row > logDataPtr->size() ||
+            !m_show_more_log)
+    {
+        return;
+    }
+    int line = m_model->getLogFilterDataPtr()->at(row).line -1;
+    qDebug() << "row = " << row << "line= " << line;
+    m_show_more_log->clearLog();
+    QString match_tid = logDataPtr->at(line).tid;
+    int front_count = 0;
+    int back_count = 0;
+    QStringList log;
+    for (int i  = line; i >= 0; --i) {
+        if (logDataPtr->at(i).tid.compare(match_tid) == 0) {
+            QString str;
+            str.append(QString::number(logDataPtr->at(i).line));
+            str.append("\t");
+            str.append(logDataPtr->at(i).time);
+            str.append("\t");
+            str.append(logDataPtr->at(i).level);
+            str.append("\t");
+            str.append(logDataPtr->at(i).pid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tag);
+            str.append("\t");
+            str.append(logDataPtr->at(i).msg);
+            log.insert(0, str);
+            if (++front_count == SHOW_MORE_LINES_THRESHOLD) {
+                break;
+            }
+        }
+    }
+    for (int i = line; i < logDataPtr->size(); ++i) {
+        if (logDataPtr->at(i).tid.compare(match_tid) == 0) {
+            QString str;
+            str.append(QString::number(logDataPtr->at(i).line));
+            str.append("\t");
+            str.append(logDataPtr->at(i).time);
+            str.append("\t");
+            str.append(logDataPtr->at(i).level);
+            str.append("\t");
+            str.append(logDataPtr->at(i).pid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tag);
+            str.append("\t");
+            str.append(logDataPtr->at(i).msg);
+            log.append(str);
+            if (++back_count == SHOW_MORE_LINES_THRESHOLD) {
+                break;
+            }
+        }
+    }
+    m_show_more_log->appendLog(log.join("\n"));
+    m_show_more_log->scrollToLine(front_count);
     m_show_more_log->show();
     m_show_more_log->activateWindow();
 }
