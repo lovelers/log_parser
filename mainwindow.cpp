@@ -97,11 +97,16 @@ void MainWindow::goto_line() {
     qDebug() << "goto here";
     //m_line_dialog->setFocus();
     m_line_dialog->show();
+    m_line_dialog->activateWindow();
 }
 
 void MainWindow::persistSettings() {
     qDebug() << "persistSettings" << endl;
-    if (m_persist_settings) m_persist_settings->show();
+    if (m_persist_settings) {
+        m_persist_settings->activateWindow();
+        m_persist_settings->show();
+    }
+
 }
 
 void MainWindow::version() {

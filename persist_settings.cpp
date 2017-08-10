@@ -204,9 +204,15 @@ bool persist_model::checkSetValueValidate(const QString &str, const QString &ran
         int c = range.indexOf(']');
         int range_min = range.mid(a+1, b-a-1).toInt();
         int range_max = range.mid(b+1, c-b-1).toInt();
+
+        bool ok = false;
+        int value = str.toInt(&ok, 10);
         qDebug() << "range_min = " << range_min
-                 << ", range_max = " << range_max;
-        if (str.toInt() > range_max || str.toInt() < range_min)
+                 << ", range_max = " << range_max
+                 << "value = " << value
+                 << "ok = " << ok;
+        if (ok == false) return false;
+        if (value > range_max || value < range_min)
             return false;
         else
             return true;
