@@ -39,6 +39,7 @@ public:
     static QStringList checkDevices();
     static bool adbRootRemount();
     static QString adbProperity(QString key, QString value);
+    static void adbRestartCamera();
 };
 
 #endif // ADB_ONLINE_H

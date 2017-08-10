@@ -106,6 +106,9 @@
         </item>
         <item row="0" column="1">
          <widget class="QComboBox" name="msg_combobox">
+          <property name="inputMethodHints">
+           <set>Qt::ImhNone</set>
+          </property>
           <property name="editable">
            <bool>true</bool>
           </property>

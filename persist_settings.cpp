@@ -5,6 +5,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QProcess>
+#include <QMessageBox>
 #include "adb_online.h"
 persist_settings::persist_settings(QWidget *parent) :
     QDialog(parent),
@@ -43,6 +44,8 @@ void persist_settings::configurePressed() {
         QStringList list = adb_online::checkDevices();
         if (list.size() == 0) {
             qDebug() << "check Devices() failed";
+            QMessageBox::about(this, tr("check Devices failed"),
+                                        tr(""));
             return;
         }
         if (list.size() > 1) {
@@ -54,6 +57,8 @@ void persist_settings::configurePressed() {
         if (root_remount == false) {
             // remount faled.
             qDebug() << "root remount failed";
+            QMessageBox::about(this, tr("root remount failed"),
+                                        tr(""));
             return;
         }
         for (int i = 0; i < data.size(); i++) {
@@ -65,6 +70,7 @@ void persist_settings::configurePressed() {
                         data.at(i).name, data.at(i).set_value);
             m_model->updateCurValue(i, cur_value);
         }
+        adb_online::adbRestartCamera();
     }
 }
 
@@ -74,6 +80,8 @@ void persist_settings::resetPressed() {
         QStringList list = adb_online::checkDevices();
         if (list.size() == 0) {
             qDebug() << "check Devices() failed";
+            QMessageBox::about(this, tr("check Devices failed"),
+                                        tr(""));
             return;
         }
         if (list.size() > 1) {
@@ -85,13 +93,17 @@ void persist_settings::resetPressed() {
         if (root_remount == false) {
             // remount faled.
             qDebug() << "root remount failed";
+            QMessageBox::about(this, tr("root remount failed"),
+                                        tr(""));
             return;
         }
         for (int i = 0; i < data.size(); i++) {
+#if 0
             if (data.at(i).set_value.compare(data.at(i).default_value) == 0) {
                 //qDebug() << "no change for " << data.at(i).name;
                 continue;
             }
+#endif
             QString cur_value = adb_online::adbProperity(
                         data.at(i).name, data.at(i).default_value);
             if (cur_value.compare(data.at(i).default_value) == 0) {
@@ -99,6 +111,7 @@ void persist_settings::resetPressed() {
             }
             //m_model->updateCurValue(i, cur_value);
         }
+        adb_online::adbRestartCamera();
     }
 }
 

@@ -164,11 +164,23 @@ QString adb_online::adbProperity(QString key, QString value) {
     process.waitForFinished(100);
     QString setprop = process.readAll().simplified();
     process.close();
+#if 0
     process.start("adb", QStringList() << "shell" << "getprop " << key);
     process.waitForFinished(100);
     QString getprop = process.readAll().simplified();
     process.close();
+
     qDebug() << setprop << getprop << endl;
+#endif
     process.destroyed();
-    return getprop;
+    return setprop;
+}
+
+void adb_online::adbRestartCamera() {
+    QProcess process;
+    qDebug() << "restart cameraservice";
+    process.start("adb", QStringList() << "shell" << "pkill" << "-l" << "9" << "camera");
+    process.waitForFinished(10000);
+    process.close();
+    process.destroyed();
 }
