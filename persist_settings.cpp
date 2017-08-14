@@ -66,9 +66,9 @@ void persist_settings::configurePressed() {
                 //qDebug() << "no change for " << data.at(i).name;
                 continue;
             }
-            QString cur_value = adb_online::adbProperity(
+            adb_online::adbProperity(
                         data.at(i).name, data.at(i).set_value);
-            m_model->updateCurValue(i, cur_value);
+            m_model->updateCurValue(i, data.at(i).set_value);
         }
         adb_online::adbRestartCamera();
     }

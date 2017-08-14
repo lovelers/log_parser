@@ -43,6 +43,9 @@ MainWindow::MainWindow(QWidget *parent) :
                      this, SLOT(android_devices_select()));
     check_adb_device_tiemr.start(1000);
     QWidget::showMaximized();
+
+    m_log_open_path = QDir::currentPath() + LOG_OUTPUT_DIR;
+    QDir::current().mkdir(LOG_OUTPUT_DIR);
 }
 
 MainWindow::~MainWindow()
@@ -62,16 +65,19 @@ MainWindow::~MainWindow()
         delete m_adb;
         m_adb = NULL;
     }
+
 }
 
 void MainWindow::openLog(){
     qDebug() << "openLog" << endl;
     this->android_stop();
-    QString filename = QFileDialog::getOpenFileName(this, tr("open log"), ".", tr("log file (*.txt *.log *log*)"));
+    QString filename = QFileDialog::getOpenFileName(this, tr("open log"), m_log_open_path, tr("log file (*.txt *.log *log*)"));
     if (filename.isEmpty()) {
         qDebug() << "file is empty()" << endl;
         return;
     }
+    QFileInfo info(filename);
+    m_log_open_path = info.absolutePath();
     this->setWindowTitle(m_window_title + ":" + filename);
     m_tablectrl->processLogFromFile(filename);
 }

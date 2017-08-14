@@ -44,6 +44,17 @@ typedef struct {
     QString msg;
 } log_info_per_line_t;
 
+typedef enum {
+    UNKNOWN = -1,
+    LOGCAT = 0,//logcat
+    LOGCAT_THREADTIME, //logcat -v threadtime
+    LOGCAT_TIME, // logcat -v time
+    //LOGCAT_RATIO_TIME, //logcat -b radio -v time
+    //LOGCAT_EVENTS_TIME, //logcat -b events -v time
+    CAT_PROC_KMSG, //cat /proc/kmsg
+    LOGCAT_DUMP_TO_FILE
+} log_type;
+
 typedef QVector<log_info_per_line_t> log_info_t;
 class log_config
 {
@@ -55,18 +66,12 @@ public:
         }
         return g_logConfig;
     }
-    typedef enum {
-        LOGCAT_THREADTIME =0, //logcat -v threadtime
-        LOGCAT_TIME, // logcat -v time
-        LOGCAT_RATIO_TIME, //logcat -b radio -v time
-        LOGCAT_EVENTS_TIME, //logcat -b events -v time
-        CAT_PROC_KMSG //cat /proc/kmsg
-    } cmd_type;
+
     bool isConfigValid() const { return m_isValid; }
     const QVector<QString> &getKeys() { return m_keys;}
     const QVector<qint16> &getWidths() { return m_widths;}
-    static log_info_per_line_t processPerLine(const QString &str, cmd_type type = LOGCAT_THREADTIME);
-    static cmd_type checkCmdType(QString &ss);
+    static log_info_per_line_t processPerLine(const QString &str, log_type type = LOGCAT_THREADTIME);
+    static log_type checkLogType(const QString &str);
     const QVector<Persist>& getPersist() { return m_persist;}
 private:
     QVector<QString> m_keys;

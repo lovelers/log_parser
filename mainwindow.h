@@ -40,6 +40,7 @@ private:
     goto_line_dialog *m_line_dialog;
     persist_settings *m_persist_settings;
 
+    QString m_log_open_path;
 
 public Q_SLOTS:
     void openLog();

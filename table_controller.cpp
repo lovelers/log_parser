@@ -110,11 +110,28 @@ bool table_controller::processLogFromFile(QString &filename) {
 
     log_info_per_line_t log_info_per_line;
     logData.reserve(500000);
+
+    log_type ltype = LOGCAT;
     if (file->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        // here skip 20 lines, and then check log type
+        int skipCount = 20;
+        for (int i = 0; i< skipCount; ++i) {
+            file->readLine();
+        }
+        do {
+            log_type cur_type = log_config::checkLogType(file->readLine());
+            if (ltype == cur_type) {
+                break;
+            }
+            ltype = cur_type;
+        } while (true);
+        qDebug() << "check the type: " << ltype;
+        //m_logConfig->analysisLogType(filename);
+        file->seek(0);
         QTextStream in(file);
         int line_count = 1;
         while (!in.atEnd()) {
-            log_info_per_line = m_logConfig->processPerLine(in.readLine().trimmed());
+            log_info_per_line = log_config::processPerLine(in.readLine().trimmed(), ltype);
             log_info_per_line.line = line_count++;
             if (isFilterMatched(log_info_per_line)) {
                 filterData.append(log_info_per_line);
@@ -175,7 +192,7 @@ const QString g_log_level[LOG_LEVEL_MAX] = {
 
 bool table_controller::isLevelVisible(const QString &leve) {
     if (leve.isEmpty()) {
-        qDebug() << "isEmpty" << endl;
+        //qDebug() << "isEmpty" << endl;
         return true;
     }
     for (int i = 0; i < LOG_LEVEL_MAX; i++ ){
