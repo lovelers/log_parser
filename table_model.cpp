@@ -65,7 +65,7 @@ Qt::ItemFlags table_model::flags(const QModelIndex &index) const
     if (!index.isValid())
         return Qt::ItemIsEnabled;
 
-    return QAbstractTableModel::flags(index);
+    return QAbstractTableModel::flags(index)| Qt::ItemIsDropEnabled;
 }
 
 bool table_model::setData(const QModelIndex &index, const QVariant &value, int role) {
@@ -150,6 +150,6 @@ QModelIndex table_model::getModexIndex(int line, int col) {
                  << "s_end  = " << s_end
                  << "s_mid = " << s_mid;
     }
-    qDebug() << "find the Index:" << s_mid;
+    qDebug() << "find the Index:" << s_mid+1;
     return this->index(s_mid, col);
 }

@@ -25,6 +25,9 @@
     <height>720</height>
    </size>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>log_parser</string>
   </property>
@@ -75,6 +78,9 @@
          <height>85</height>
         </size>
        </property>
+       <property name="acceptDrops">
+        <bool>true</bool>
+       </property>
        <property name="layoutDirection">
         <enum>Qt::LeftToRight</enum>
        </property>
@@ -106,6 +112,9 @@
         </item>
         <item row="0" column="1">
          <widget class="QComboBox" name="msg_combobox">
+          <property name="acceptDrops">
+           <bool>true</bool>
+          </property>
           <property name="inputMethodHints">
            <set>Qt::ImhNone</set>
           </property>
@@ -783,6 +792,9 @@
         <height>500</height>
        </size>
       </property>
+      <property name="acceptDrops">
+       <bool>true</bool>
+      </property>
       <property name="autoFillBackground">
        <bool>false</bool>
       </property>
@@ -806,6 +818,12 @@
       </property>
       <property name="dragDropOverwriteMode">
        <bool>false</bool>
+      </property>
+      <property name="dragDropMode">
+       <enum>QAbstractItemView::NoDragDrop</enum>
+      </property>
+      <property name="defaultDropAction">
+       <enum>Qt::IgnoreAction</enum>
       </property>
       <property name="selectionMode">
        <enum>QAbstractItemView::ContiguousSelection</enum>

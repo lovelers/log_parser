@@ -17,6 +17,8 @@ table_controller::table_controller(QTableView *view) {
     m_model = new table_model();
     m_delegate = new table_item_delegate();
 
+    //m_view->setAcceptDrops(true);
+    //m_view->setDropIndicatorShown(true);
     // here set fixed verital header width to disable the resize of it.
     // it can improve the tableview performance.
     m_view->verticalHeader()->setFixedWidth(50);
@@ -180,8 +182,8 @@ void table_controller::updateLogLevelVisible() {
     QTime stime;
     stime.start();
     //processFilter(m_log_filter);
-    if (m_log_online->isRunning()) {
-
+    if (!m_log_online->isRunning()) {
+        processFilterPrivate();
     }
     qDebug() << "row hidden time diff: " << stime.elapsed() << endl;
 }
@@ -393,9 +395,10 @@ void table_controller::setFont(const QFont &font) {
 void table_controller::recieveLineNumber(int line) {
     if (m_view && m_model) {
         qDebug() << __func__ << "goto line:" << line;
-        m_view->selectRow(line);
-        m_view->scrollTo(m_model->getModexIndex(line, 0));
+        QModelIndex index = m_model->getModexIndex(line, 0);
+        m_view->scrollTo(index);
         m_view->setFocus();
+        m_view->selectRow(index.row());
     }
 }
 

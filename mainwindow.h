@@ -42,6 +42,8 @@ private:
 
     QString m_log_open_path;
 
+    void dropEvent(QDropEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event);
 public Q_SLOTS:
     void openLog();
     void adbConnect();

@@ -8,6 +8,8 @@
 #include <QTime>
 #include <QStringList>
 #include <QString>
+#include <QDragEnterEvent>
+#include <QMimeData>
 #include "goto_line_dialog.h"
 #include "config.h"
 MainWindow::MainWindow(QWidget *parent) :
@@ -367,4 +369,19 @@ void MainWindow::recieveLineNumber(int line) {
     if (m_tablectrl) {
         m_tablectrl->recieveLineNumber(line);
     }
+}
+
+void MainWindow::dropEvent(QDropEvent *event) {
+    const QMimeData *data = event->mimeData();
+    if (data->hasUrls()) {
+        if (data->urls().at(0).isLocalFile()) {
+            QString filename = data->urls().at(0).toLocalFile();
+            this->setWindowTitle(m_window_title + ":" + filename);
+            m_tablectrl->processLogFromFile(filename);
+        }
+    }
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
+    event->accept();
 }
