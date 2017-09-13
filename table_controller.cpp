@@ -80,20 +80,17 @@ table_controller::table_controller(QTableView *view) {
 }
 
 table_controller::~table_controller() {
-    if (m_table_menu) delete m_table_menu;
     if (m_log_copy) delete m_log_copy;
     if (m_log_extract) delete m_log_extract;
     if (m_log_extract_with_tag) delete m_log_extract_with_tag;
     if (m_log_extract_with_pid) delete m_log_extract_with_pid;
     if (m_log_extract_with_tid) delete m_log_extract_with_tid;
     if (m_table_menu) delete m_table_menu;
-
     if (m_menu) delete m_menu;
     if (m_scroll_timer) {
         m_scroll_timer->stop();
         delete m_scroll_timer;
     }
-
     if (m_log_online) {
         m_log_online->terminate();
         m_log_online->wait();
@@ -385,7 +382,9 @@ void table_controller::setAdbCmd(ANDROID_ONLINE_CMD cmd) {
         case ANDROID_STOP:
         default:
             m_scroll_timer->stop();
-            m_log_online->exit();
+            if (m_log_online->isRunning()) {
+                m_log_online->exit();
+            }
             break;
         }
 
@@ -771,4 +770,9 @@ void table_controller::logCopy() {
         return;
     }
     return;
+}
+
+
+void table_controller::closeWindow() {
+    if (m_table_menu) m_table_menu->close();
 }

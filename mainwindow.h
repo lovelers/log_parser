@@ -46,13 +46,11 @@ private:
     void dragEnterEvent(QDragEnterEvent *event);
 
     void keyPressEvent(QKeyEvent *event);
+    void closeEvent(QCloseEvent * event);
 public Q_SLOTS:
     void openLog();
     void adbConnect();
     void recentlyFiles();
-
-    void myExit();
-
     void font();
     void goto_line();
     void persistSettings();

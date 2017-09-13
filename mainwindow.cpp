@@ -52,11 +52,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete m_line_dialog;
-    delete ui;
-    delete m_persist_settings;
+    qDebug() << "main window destory";
+    if (m_line_dialog) delete m_line_dialog;
+    if (m_persist_settings) delete m_persist_settings;
     check_adb_device_tiemr.stop();
-
     if (m_tablectrl) {
         m_tablectrl->setAdbCmd(ANDROID_STOP);
         delete m_tablectrl;
@@ -67,7 +66,7 @@ MainWindow::~MainWindow()
         delete m_adb;
         m_adb = NULL;
     }
-
+    delete ui;
 }
 
 void MainWindow::openLog(){
@@ -119,11 +118,6 @@ void MainWindow::persistSettings() {
 
 void MainWindow::version() {
     qDebug() << "version 1.0" << endl;
-}
-
-void MainWindow::myExit() {
-    qDebug() << "myExit" << endl;
-    this->close();
 }
 
 void MainWindow::myShow() {
@@ -393,4 +387,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         return;
     }
     QWidget::keyPressEvent(event);
+}
+
+void MainWindow::closeEvent(QCloseEvent *) {
+    qDebug() << "MainWindow Close Event";
+    m_tablectrl->closeWindow();
+    m_persist_settings->close();
+    m_font_dialog.close();
+    m_line_dialog->close();
 }

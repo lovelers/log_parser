@@ -93,18 +93,12 @@ public:
 
     void setColumnVisible(TABLE_COL_TYPE type, bool visiable);
     void setLogLevelVisible(LOG_LEVEL type, bool visiable);
-
     void setFilter(const log_filter_t& filter);
-
     void showAllLogs();
-
     void setAdbCmd(ANDROID_ONLINE_CMD cmd);
-
     void setFont(const QFont &font);
-
     void recieveLineNumber(int line);
-
-
+    void closeWindow();
 
 public slots:
     void processLogOnline(QString str, int line_count);
