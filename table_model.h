@@ -23,7 +23,6 @@ public:
     log_info_t * getLogDataPtr();
     void setLogFilterData(const log_info_t &data);
     void appendLogFilterData(const log_info_per_line_t &data);
-
     log_info_t *getLogFilterDataPtr();
     QModelIndex getModexIndex(int line, int col);
 private:

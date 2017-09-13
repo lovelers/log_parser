@@ -385,3 +385,12 @@ void MainWindow::dropEvent(QDropEvent *event) {
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
     event->accept();
 }
+
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+    if (event->matches(QKeySequence::Copy)
+            && ui->TableView->isActiveWindow()) {
+        //m_tablectrl->myCopy();
+        return;
+    }
+    QWidget::keyPressEvent(event);
+}

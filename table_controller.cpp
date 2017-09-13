@@ -8,8 +8,10 @@
 #include <QThread>
 #include <QHeaderView>
 #include <QMenu>
-
-#include "show_more_log.h"
+#include <QApplication>
+#include <QClipboard>
+#include "table_menu.h"
+#include <QtAlgorithms>
 table_controller::table_controller(QTableView *view) {
     m_logConfig = log_config::getInstance();
 
@@ -45,24 +47,29 @@ table_controller::table_controller(QTableView *view) {
 
     //show more log
     m_menu =new QMenu(m_view);
-    m_show_more = new QAction("show more log");
-    m_show_more_same_tag = new QAction("show more log with same tag");
-    m_show_more_same_tid = new QAction("show more log with same tid");
-    m_show_more_same_pid = new QAction("show more log with same pid");
-    QObject::connect(m_show_more, SIGNAL(triggered()),
-                     this, SLOT(showMore()));
-    QObject::connect(m_show_more_same_tag, SIGNAL(triggered(bool)),
-                     this, SLOT(showMoreSameTag()));
-    QObject::connect(m_show_more_same_pid, SIGNAL(triggered(bool)),
-                     this, SLOT(showMoreSamePid()));
-    QObject::connect(m_show_more_same_tid, SIGNAL(triggered(bool)),
-                     this, SLOT(showMoreSameTid()));
 
-    m_menu->addAction(m_show_more);
-    m_menu->addAction(m_show_more_same_tag);
-    m_menu->addAction(m_show_more_same_pid);
-    m_menu->addAction(m_show_more_same_tid);
-    m_show_more_log = new show_more_log;
+    m_log_copy = new QAction("copy");
+    m_log_extract = new QAction("log extract");
+    m_log_extract_with_tag = new QAction("log with same tag");
+    m_log_extract_with_pid = new QAction("log with same tid");
+    m_log_extract_with_tid = new QAction("log with same pid");
+    QObject::connect(m_log_copy, SIGNAL(triggered(bool)),
+                     this, SLOT(logCopy()));
+    QObject::connect(m_log_extract, SIGNAL(triggered()),
+                     this, SLOT(logExtract()));
+    QObject::connect(m_log_extract_with_tag, SIGNAL(triggered(bool)),
+                     this, SLOT(logExtractWithTag()));
+    QObject::connect(m_log_extract_with_pid, SIGNAL(triggered(bool)),
+                     this, SLOT(logExtractWithPid()));
+    QObject::connect(m_log_extract_with_tid, SIGNAL(triggered(bool)),
+                     this, SLOT(logExtractWithTid()));
+
+    m_menu->addAction(m_log_copy);
+    m_menu->addAction(m_log_extract);
+    m_menu->addAction(m_log_extract_with_tag);
+    m_menu->addAction(m_log_extract_with_pid);
+    m_menu->addAction(m_log_extract_with_tid);
+    m_table_menu = new table_menu;
 
     m_log_online = new online_log_process();
     QObject::connect(m_log_online, SIGNAL(processLogOnline(QString,int)),
@@ -73,11 +80,13 @@ table_controller::table_controller(QTableView *view) {
 }
 
 table_controller::~table_controller() {
-    if (m_show_more) delete m_show_more;
-    if (m_show_more_same_tag) delete m_show_more_same_tag;
-    if (m_show_more_same_pid) delete m_show_more_same_pid;
-    if (m_show_more_same_tid) delete m_show_more_same_tid;
-    if (m_show_more_log) delete m_show_more_log;
+    if (m_table_menu) delete m_table_menu;
+    if (m_log_copy) delete m_log_copy;
+    if (m_log_extract) delete m_log_extract;
+    if (m_log_extract_with_tag) delete m_log_extract_with_tag;
+    if (m_log_extract_with_pid) delete m_log_extract_with_pid;
+    if (m_log_extract_with_tid) delete m_log_extract_with_tid;
+    if (m_table_menu) delete m_table_menu;
 
     if (m_menu) delete m_menu;
     if (m_scroll_timer) {
@@ -322,6 +331,7 @@ void table_controller::showAllLogs() {
         filterData.append(logData->at(i));
     }
     m_model->setLogFilterData(filterData);
+    m_model->setLogData(filterData);
     m_log_filter.msg.clear();
     m_log_filter.pid.clear();
     m_log_filter.tid.clear();
@@ -408,7 +418,7 @@ void table_controller::tableCustomMenuRequest(QPoint point) {
     }
 }
 
-void table_controller::showMore() {
+void table_controller::logExtract() {
     QModelIndex index =
             m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
     qint32 row = index.row();
@@ -418,13 +428,13 @@ void table_controller::showMore() {
     if (row < 0 ||
             logDataPtr->size() == 0 ||
             row > logDataPtr->size() ||
-            !m_show_more_log)
+            !m_table_menu)
     {
         return;
     }
     int line = m_model->getLogFilterDataPtr()->at(row).line -1;
     qDebug() << "row = " << row << "line= " << line;
-    m_show_more_log->clearLog();
+    m_table_menu->clearLog();
     int front_count = 0;
     int back_count = 0;
     QStringList log;
@@ -469,13 +479,13 @@ void table_controller::showMore() {
             break;
         }
     }
-    m_show_more_log->appendLog(log.join("\n"));
-    m_show_more_log->scrollToLine(front_count);
-    m_show_more_log->show();
-    m_show_more_log->activateWindow();
+    m_table_menu->appendLog(log.join("\n"));
+    m_table_menu->scrollToLine(front_count);
+    m_table_menu->show();
+    m_table_menu->activateWindow();
 }
 
-void table_controller::showMoreSameTag() {
+void table_controller::logExtractWithTag() {
     QModelIndex index =
             m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
     qint32 row = index.row();
@@ -485,13 +495,13 @@ void table_controller::showMoreSameTag() {
     if (row < 0 ||
             logDataPtr->size() == 0 ||
             row > logDataPtr->size() ||
-            !m_show_more_log)
+            !m_table_menu)
     {
         return;
     }
     int line = m_model->getLogFilterDataPtr()->at(row).line -1;
     qDebug() << "row = " << row << "line= " << line;
-    m_show_more_log->clearLog();
+    m_table_menu->clearLog();
     QString match_tag = logDataPtr->at(line).tag;
     int front_count = 0;
     int back_count = 0;
@@ -541,12 +551,12 @@ void table_controller::showMoreSameTag() {
 
         }
     }
-    m_show_more_log->appendLog(log.join("\n"));
-    m_show_more_log->scrollToLine(front_count);
-    m_show_more_log->show();
-    m_show_more_log->activateWindow();
+    m_table_menu->appendLog(log.join("\n"));
+    m_table_menu->scrollToLine(front_count);
+    m_table_menu->show();
+    m_table_menu->activateWindow();
 }
-void table_controller::showMoreSamePid() {
+void table_controller::logExtractWithPid() {
     QModelIndex index =
             m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
     qint32 row = index.row();
@@ -556,13 +566,13 @@ void table_controller::showMoreSamePid() {
     if (row < 0 ||
             logDataPtr->size() == 0 ||
             row > logDataPtr->size() ||
-            !m_show_more_log)
+            !m_table_menu)
     {
         return;
     }
     int line = m_model->getLogFilterDataPtr()->at(row).line -1;
     qDebug() << "row = " << row << "line= " << line;
-    m_show_more_log->clearLog();
+    m_table_menu->clearLog();
     QString match_pid = logDataPtr->at(line).pid;
     int front_count = 0;
     int back_count = 0;
@@ -611,12 +621,12 @@ void table_controller::showMoreSamePid() {
             }
         }
     }
-    m_show_more_log->appendLog(log.join("\n"));
-    m_show_more_log->scrollToLine(front_count);
-    m_show_more_log->show();
-    m_show_more_log->activateWindow();
+    m_table_menu->appendLog(log.join("\n"));
+    m_table_menu->scrollToLine(front_count);
+    m_table_menu->show();
+    m_table_menu->activateWindow();
 }
-void table_controller::showMoreSameTid() {
+void table_controller::logExtractWithTid() {
     QModelIndex index =
             m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
     qint32 row = index.row();
@@ -626,13 +636,13 @@ void table_controller::showMoreSameTid() {
     if (row < 0 ||
             logDataPtr->size() == 0 ||
             row > logDataPtr->size() ||
-            !m_show_more_log)
+            !m_table_menu)
     {
         return;
     }
     int line = m_model->getLogFilterDataPtr()->at(row).line -1;
     qDebug() << "row = " << row << "line= " << line;
-    m_show_more_log->clearLog();
+    m_table_menu->clearLog();
     QString match_tid = logDataPtr->at(line).tid;
     int front_count = 0;
     int back_count = 0;
@@ -681,10 +691,10 @@ void table_controller::showMoreSameTid() {
             }
         }
     }
-    m_show_more_log->appendLog(log.join("\n"));
-    m_show_more_log->scrollToLine(front_count);
-    m_show_more_log->show();
-    m_show_more_log->activateWindow();
+    m_table_menu->appendLog(log.join("\n"));
+    m_table_menu->scrollToLine(front_count);
+    m_table_menu->show();
+    m_table_menu->activateWindow();
 }
 
 void table_controller::setOnLineLogFile(QString path) {
@@ -725,4 +735,40 @@ void online_log_process::run() {
             msleep(2);
         }
     }
+}
+
+void table_controller::logCopy() {
+    QItemSelectionModel *selection= m_view->selectionModel();
+    if (selection->hasSelection()) {
+        qDebug() << "hasSelecton";
+        QString str;
+        QString text;
+        log_info_t * logDataPtr = m_model->getLogDataPtr();
+        int start = selection->selection().first().topLeft().row();
+        int end = selection->selection().first().bottomRight().row();
+        qDebug() << "start = " << start;
+        qDebug() << "end = " << end;
+        for (int i = start; i <= end; i++) {
+            str.clear();
+            str.append(QString::number(logDataPtr->at(i).line));
+            str.append("\t");
+            str.append(logDataPtr->at(i).time);
+            str.append("\t");
+            str.append(logDataPtr->at(i).level);
+            str.append("\t");
+            str.append(logDataPtr->at(i).pid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tid);
+            str.append("\t");
+            str.append(logDataPtr->at(i).tag);
+            str.append("\t");
+            str.append(logDataPtr->at(i).msg);
+            str.append("\n");
+            qDebug() << "i = " << i << ":" << str;
+            text.append(str);
+        }
+        QApplication::clipboard()->setText(text);
+        return;
+    }
+    return;
 }

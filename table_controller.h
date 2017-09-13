@@ -10,16 +10,15 @@
 #include <QThread>
 #include <QObject>
 #include <QWidget>
-#include <QTableWidget>
 #include "table_model.h"
 #include "table_item_delegate.h"
 #include <QTimer>
 #include <QFont>
 #include <QMenu>
 #include <QMutex>
-#include "show_more_log.h"
+#include "table_menu.h"
 #include "config.h"
-
+#include <QTableView>
 typedef struct {
     QStringList msg;
     QStringList tag;
@@ -55,11 +54,12 @@ private:
     table_item_delegate *m_delegate;
 
     QMenu *m_menu;
-    QAction *m_show_more;
-    QAction *m_show_more_same_tag;
-    QAction *m_show_more_same_pid;
-    QAction *m_show_more_same_tid;
-    show_more_log *m_show_more_log;
+    QAction *m_log_copy;
+    QAction *m_log_extract;
+    QAction *m_log_extract_with_tag;
+    QAction *m_log_extract_with_pid;
+    QAction *m_log_extract_with_tid;
+    table_menu *m_table_menu;
 
     qint32 m_column_visible;
     qint32 m_level_visible;
@@ -100,19 +100,21 @@ public:
 
     void setAdbCmd(ANDROID_ONLINE_CMD cmd);
 
-
-
     void setFont(const QFont &font);
 
     void recieveLineNumber(int line);
+
+
+
 public slots:
     void processLogOnline(QString str, int line_count);
     void scrollToBottom();
     void tableCustomMenuRequest(QPoint point);
-    void showMore();
-    void showMoreSameTag();
-    void showMoreSamePid();
-    void showMoreSameTid();
+    void logExtract();
+    void logExtractWithTag();
+    void logExtractWithPid();
+    void logExtractWithTid();
+    void logCopy();
 
     void setOnLineLogFile(QString path);
 };

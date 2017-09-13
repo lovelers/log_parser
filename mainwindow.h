@@ -44,6 +44,8 @@ private:
 
     void dropEvent(QDropEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
+
+    void keyPressEvent(QKeyEvent *event);
 public Q_SLOTS:
     void openLog();
     void adbConnect();

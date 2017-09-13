@@ -1,24 +1,24 @@
-#include "show_more_log.h"
-#include "ui_show_more_log.h"
+#include "table_menu.h"
+#include "ui_table_menu.h"
 #include <QTextCursor>
 #include <QTextBlock>
-show_more_log::show_more_log(QWidget *parent) :
+table_menu::table_menu(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::show_more_log)
+    ui(new Ui::table_menu)
 {
     ui->setupUi(this);
 }
 
-void show_more_log::appendLog(const QString &log) {
+void table_menu::appendLog(const QString &log) {
     ui->log_text->append(log);
 }
 
-void show_more_log::clearLog() {
+void table_menu::clearLog() {
     ui->log_text->clear();
    // ui->log_text->setCursor();
 }
 
-void show_more_log::scrollToLine(int line) {
+void table_menu::scrollToLine(int line) {
     QTextBlock text_block =  ui->log_text->document()->findBlockByLineNumber(line - 1);
     QTextCursor text_cursor = ui->log_text->textCursor();
     text_cursor.setPosition(text_block.position());
@@ -26,7 +26,7 @@ void show_more_log::scrollToLine(int line) {
     ui->log_text->setTextCursor(text_cursor);
 }
 
-show_more_log::~show_more_log()
+table_menu::~table_menu()
 {
     delete ui;
 }
