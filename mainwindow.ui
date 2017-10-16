@@ -92,47 +92,62 @@
        </property>
        <layout class="QGridLayout" name="gridLayout_5">
         <item row="0" column="0">
-         <widget class="QLabel" name="msg_label">
-          <property name="minimumSize">
-           <size>
-            <width>22</width>
-            <height>16</height>
-           </size>
+         <widget class="QSplitter" name="splitter_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
-          <property name="maximumSize">
-           <size>
-            <width>22</width>
-            <height>16</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Msg:</string>
-          </property>
+          <widget class="QLabel" name="msg_label">
+           <property name="minimumSize">
+            <size>
+             <width>22</width>
+             <height>16</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>22</width>
+             <height>16</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Msg:</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="msg_combobox">
+           <property name="minimumSize">
+            <size>
+             <width>500</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>1200</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="acceptDrops">
+            <bool>true</bool>
+           </property>
+           <property name="inputMethodHints">
+            <set>Qt::ImhNone</set>
+           </property>
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <property name="insertPolicy">
+            <enum>QComboBox::InsertAtTop</enum>
+           </property>
+           <property name="duplicatesEnabled">
+            <bool>false</bool>
+           </property>
+           <property name="modelColumn">
+            <number>0</number>
+           </property>
+          </widget>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QComboBox" name="msg_combobox">
-          <property name="acceptDrops">
-           <bool>true</bool>
-          </property>
-          <property name="inputMethodHints">
-           <set>Qt::ImhNone</set>
-          </property>
-          <property name="editable">
-           <bool>true</bool>
-          </property>
-          <property name="insertPolicy">
-           <enum>QComboBox::InsertAtTop</enum>
-          </property>
-          <property name="duplicatesEnabled">
-           <bool>false</bool>
-          </property>
-          <property name="modelColumn">
-           <number>0</number>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
+        <item row="1" column="0">
          <widget class="QSplitter" name="splitter_2">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
