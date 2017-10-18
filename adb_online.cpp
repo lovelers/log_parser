@@ -55,6 +55,7 @@ void adb_online::android_run() {
     }
 
     m_file_path = QDir::currentPath() + "/"
+            + LOG_OUTPUT_DIR + "/"
             + QDate::currentDate().toString("yyyy_MM_dd_")
             + QTime::currentTime().toString("hh_mm_ss_")
             + "logcat.txt";

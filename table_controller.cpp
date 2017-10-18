@@ -51,8 +51,8 @@ table_controller::table_controller(QTableView *view) {
     m_log_copy = new QAction("copy");
     m_log_extract = new QAction("log extract");
     m_log_extract_with_tag = new QAction("log with same tag");
-    m_log_extract_with_pid = new QAction("log with same tid");
-    m_log_extract_with_tid = new QAction("log with same pid");
+    m_log_extract_with_pid = new QAction("log with same pid");
+    m_log_extract_with_tid = new QAction("log with same tid");
     QObject::connect(m_log_copy, SIGNAL(triggered(bool)),
                      this, SLOT(logCopy()));
     QObject::connect(m_log_extract, SIGNAL(triggered()),

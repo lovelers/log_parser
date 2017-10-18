@@ -113,7 +113,6 @@ void MainWindow::persistSettings() {
         m_persist_settings->activateWindow();
         m_persist_settings->show();
     }
-
 }
 
 void MainWindow::version() {
