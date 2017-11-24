@@ -72,7 +72,7 @@ table_controller::table_controller(QTableView *view) {
     m_table_menu = new table_menu;
 
     m_log_online = new online_log_process();
-    QObject::connect(m_log_online, SIGNAL(processLogOnline(QString,int)),
+    QObject::connect(m_log_online, SIGNAL(signalLogOnline(QString,int)),
                      this, SLOT(processLogOnline(QString,int)));
     m_android_online_cmd = ANDROID_STOP;
 }
@@ -734,11 +734,11 @@ void online_log_process::run() {
     int line_count = 0;
 
     while (m_cmd != ANDROID_STOP) {
-        if (file.isReadable() && m_cmd != ANDROID_PAUSE) {
+        if (file.canReadLine() && m_cmd != ANDROID_PAUSE) {
             QString str = file.readLine().trimmed();
             if (str.isEmpty()) continue;
             //++line_count;
-            emit processLogOnline(str, ++line_count);
+            emit signalLogOnline(str, ++line_count);
             //if (line_count %100 == 0)  qDebug() << str;
         } else {
             msleep(2);

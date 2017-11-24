@@ -36,7 +36,7 @@ public:
     void setLogPath(QString path);
     void updateLogOnlineCmd(ANDROID_ONLINE_CMD cmd);
 signals:
-    void processLogOnline(const QString str, int line_count);
+    void signalLogOnline(const QString str, int line_count);
 private:
     void run();
     QString m_path;

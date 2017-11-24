@@ -27,6 +27,8 @@ private:
     void android_pause();
     void android_resume();
 
+    void outputDirManagement();
+
 public slots:
     void processFinished(int, QProcess::ExitStatus);
     void processError(QProcess::ProcessError);
@@ -40,6 +42,8 @@ public:
     static bool adbRootRemount();
     static QString adbProperity(QString key, QString value);
     static void adbRestartCamera();
+    void adbKillServer();
+    void adbStartServer();
 };
 
 #endif // ADB_ONLINE_H

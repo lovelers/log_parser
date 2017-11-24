@@ -25,6 +25,7 @@ adb_online::adb_online()
 void adb_online::setCmd(ANDROID_ONLINE_CMD type) {
     qDebug() << __func__ << "type: " << type;
     if (m_curType == type) return;
+    m_curType = type;
     switch (type) {
     case ANDROID_RUN:
         android_run();
@@ -44,15 +45,19 @@ void adb_online::setCmd(ANDROID_ONLINE_CMD type) {
     default:
         break;
     }
-    m_curType = type;
+
 }
 
 void adb_online::android_run() {
+    // when start run, clear the cache logs first.
+    android_clear();
+
     QString shell;
     QStringList cmd;
     if (m_process.state() == QProcess::Running) {
         m_process.close();
     }
+
 
     m_file_path = QDir::currentPath() + "/"
             + LOG_OUTPUT_DIR + "/"
@@ -74,6 +79,8 @@ void adb_online::android_resume() {
 
 void adb_online::android_stop() {
     m_process.kill();
+    m_process.waitForFinished(1000);
+    outputDirManagement();
 }
 
 void adb_online::android_clear() {
@@ -82,7 +89,6 @@ void adb_online::android_clear() {
     process.start("adb", QStringList() << "logcat -c");
     bool finished = process.waitForFinished(1000);
     qDebug() << "wiat for finished:" << finished;
-
     process.close();
     process.destroyed();
 }
@@ -92,6 +98,8 @@ void adb_online::processFinished(int exitCode , QProcess::ExitStatus exitStatus)
                 <<", exitStatus = " << exitStatus;
     if (m_curType != ANDROID_STOP) {
         qDebug() << "finished unexpected! run process again";
+        adbKillServer();
+        adbStartServer();
         android_run();
     }
 }
@@ -180,8 +188,44 @@ QString adb_online::adbProperity(QString key, QString value) {
 void adb_online::adbRestartCamera() {
     QProcess process;
     qDebug() << "restart cameraservice";
-    process.start("adb", QStringList() << "shell" << "pkill" << "-l" << "9" << "camera");
+    process.start("adb", QStringList() << "wait-for-device" << "shell" << "pkill" << "-l" << "9" << "camera");
     process.waitForFinished(10000);
     process.close();
     process.destroyed();
+}
+
+void adb_online::adbKillServer() {
+    QProcess process;
+    qDebug() << "restart server";
+    process.start("adb", QStringList() << "kill-server");
+    process.waitForFinished(1000);
+    process.close();
+    process.destroyed();
+}
+
+void adb_online::adbStartServer() {
+    QProcess process;
+    qDebug() << "start server";
+    process.start("adb", QStringList() << "start-server");
+    process.waitForFinished(2000);
+    process.close();
+    process.destroyed();
+}
+
+void adb_online::outputDirManagement() {
+    QDir logDir(LOG_OUTPUT_DIR);
+    QFileInfoList fileInfoList = logDir.entryInfoList(QDir::Files, QDir::Time);
+    const int maxBytes = 1000 * 1000 * 1000; // 1G
+    int bytes = 0;
+    foreach(QFileInfo fileInfo, fileInfoList) {
+        bytes += fileInfo.size();
+        if (0 == fileInfo.size() || bytes > maxBytes) {
+            QFile::setPermissions(fileInfo.absoluteFilePath(), QFileDevice::WriteOwner);
+            if ( true == logDir.remove(fileInfo.absoluteFilePath())) {
+                qDebug() << "remove empty log file: " << fileInfo.fileName();
+            } else {
+                qDebug() << "faild to remove empty log file: " << fileInfo.fileName();
+            }
+        }
+    }
 }
