@@ -135,7 +135,7 @@ bool table_controller::processLogFromFile(QString &filename) {
         //m_logConfig->analysisLogType(filename);
         file->seek(0);
         QTextStream in(file);
-        int line_count = 1;
+        int line_count = 0;
         while (!in.atEnd()) {
             log_info_per_line = log_config::processPerLine(in.readLine().trimmed(), ltype);
             log_info_per_line.line = line_count++;
@@ -430,13 +430,13 @@ void table_controller::logExtract() {
     {
         return;
     }
-    int line = m_model->getLogFilterDataPtr()->at(row).line -1;
+    int line = m_model->getLogFilterDataPtr()->at(row).line;
     qDebug() << "row = " << row << "line= " << line;
     m_table_menu->clearLog();
     int front_count = 0;
     int back_count = 0;
     QStringList log;
-    for (int i = line; i > 0; --i) {
+    for (int i = line; i > -1; --i) {
         QString str;
         str.append(QString::number(logDataPtr->at(i).line));
         str.append("\t");
@@ -497,14 +497,14 @@ void table_controller::logExtractWithTag() {
     {
         return;
     }
-    int line = m_model->getLogFilterDataPtr()->at(row).line -1;
+    int line = m_model->getLogFilterDataPtr()->at(row).line;
     qDebug() << "row = " << row << "line= " << line;
     m_table_menu->clearLog();
     QString match_tag = logDataPtr->at(line).tag;
     int front_count = 0;
     int back_count = 0;
     QStringList log;
-    for (int i  = line; i >= 0; --i) {
+    for (int i  = line; i > -1; --i) {
         if (logDataPtr->at(i).tag.compare(match_tag) == 0) {
             QString str;
             str.append(QString::number(logDataPtr->at(i).line));
@@ -568,14 +568,14 @@ void table_controller::logExtractWithPid() {
     {
         return;
     }
-    int line = m_model->getLogFilterDataPtr()->at(row).line -1;
+    int line = m_model->getLogFilterDataPtr()->at(row).line;
     qDebug() << "row = " << row << "line= " << line;
     m_table_menu->clearLog();
     QString match_pid = logDataPtr->at(line).pid;
     int front_count = 0;
     int back_count = 0;
     QStringList log;
-    for (int i  = line; i >= 0; --i) {
+    for (int i  = line; i > -1; --i) {
         if (logDataPtr->at(i).pid.compare(match_pid) == 0) {
             QString str;
             str.append(QString::number(logDataPtr->at(i).line));
@@ -638,14 +638,14 @@ void table_controller::logExtractWithTid() {
     {
         return;
     }
-    int line = m_model->getLogFilterDataPtr()->at(row).line -1;
+    int line = m_model->getLogFilterDataPtr()->at(row).line;
     qDebug() << "row = " << row << "line= " << line;
     m_table_menu->clearLog();
     QString match_tid = logDataPtr->at(line).tid;
     int front_count = 0;
     int back_count = 0;
     QStringList log;
-    for (int i  = line; i >= 0; --i) {
+    for (int i  = line; i > -1; --i) {
         if (logDataPtr->at(i).tid.compare(match_tid) == 0) {
             QString str;
             str.append(QString::number(logDataPtr->at(i).line));
@@ -733,17 +733,19 @@ void online_log_process::run() {
     }
     int line_count = 0;
 
+    register QString line;
     while (m_cmd != ANDROID_STOP) {
-        if (file.canReadLine() && m_cmd != ANDROID_PAUSE) {
-            QString str = file.readLine().trimmed();
-            if (str.isEmpty()) continue;
-            //++line_count;
-            emit signalLogOnline(str, ++line_count);
-            //if (line_count %100 == 0)  qDebug() << str;
-        } else {
-            msleep(2);
+        if (file.isReadable() && m_cmd != ANDROID_PAUSE) {
+            line = line.append(file.readLine());
+            if (line.contains('\n')) {
+                emit signalLogOnline(line, line_count++);
+                line.clear();
+            } else {
+                //qDebug() << "not a full line: " << line;
+            }
         }
     }
+
     file.close();
 
 }

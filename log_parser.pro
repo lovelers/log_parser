@@ -33,7 +33,9 @@ SOURCES += \
     adb_online.cpp \
     goto_line_dialog.cpp \
     persist_settings.cpp \
-    table_menu.cpp
+    table_menu.cpp \
+    screen_snapshot.cpp \
+    myopenglwidget.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -45,13 +47,17 @@ HEADERS += \
     adb_online.h \
     goto_line_dialog.h \
     persist_settings.h \
-    table_menu.h
+    table_menu.h \
+    screen_snapshot.h \
+    myopenglwidget.h
 
 FORMS += \
         mainwindow.ui \
     line_dialog.ui \
     persist_settings.ui \
-    table_menu.ui
+    table_menu.ui \
+    screen_snapshot.ui \
+    screen_snapshot.ui
 
 DISTFILES += \
     log_config.json \

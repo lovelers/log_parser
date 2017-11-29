@@ -59,18 +59,23 @@ log_info_per_line_t log_config::processPerLine(const QString &str, log_type type
     QRegularExpressionMatch match;
     int delimiter = -1;
     int delimiter1 = -1;
-
+    if (type != checkLogType(str)) {
+        line.msg = str.trimmed();
+        return line;
+    }
     switch (type) {
     case LOGCAT_THREADTIME:
-        line.date = str.mid(0,5);
-        line.time = str.mid(6,12);
-        line.pid = str.mid(19,5);
-        line.tid = str.mid(25,5);
-        line.level = str.mid(31,1);
-        delimiter = str.indexOf(QChar(':'), 33);
-        if (delimiter != -1) {
-            line.tag = str.mid(33, delimiter - 33);
-            line.msg = str.mid(delimiter+1);
+        {
+            line.date = str.mid(0,5);
+            line.time = str.mid(6,12);
+            line.pid = str.mid(19,5);
+            line.tid = str.mid(25,5);
+            line.level = str.mid(31,1);
+            delimiter = str.indexOf(QChar(':'), 33);
+            if (delimiter != -1) {
+                line.tag = str.mid(33, delimiter - 33);
+                line.msg = str.mid(delimiter+1).trimmed();
+            }
         }
         break;
     case LOGCAT_TIME:
@@ -82,9 +87,9 @@ log_info_per_line_t log_config::processPerLine(const QString &str, log_type type
         if (delimiter != -1 && delimiter1 != -1 && delimiter < delimiter1) {
             line.msg = str.mid(delimiter1+1);
             line.tag = str.mid(21, delimiter-21);
-            line.pid = str.mid(delimiter+1, delimiter1 - delimiter-1);
+            line.pid = str.mid(delimiter+1, delimiter1 - delimiter-1).trimmed();
         } else {
-            line.msg = str.mid(21);
+            line.msg = str.mid(21).trimmed();
         }
         break;
 
@@ -95,15 +100,16 @@ log_info_per_line_t log_config::processPerLine(const QString &str, log_type type
         if (delimiter != -1 && delimiter1 != -1 && delimiter < delimiter1) {
             line.tag = str.mid(2, delimiter -2);
             line.pid = str.mid(delimiter+1, delimiter1 - delimiter -1);
-            line.msg = str.mid(delimiter1+1);
+            line.msg = str.mid(delimiter1+1).trimmed();
         } else {
-            line.msg = str;
+            line.msg = str.trimmed();
         }
         break;
     default:
-        line.msg = str;
+        line.msg = str.trimmed();
         break;
     }
+
     return line;
 }
 

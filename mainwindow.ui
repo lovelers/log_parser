@@ -884,6 +884,7 @@
     <addaction name="font"/>
     <addaction name="persist"/>
     <addaction name="goto_line"/>
+    <addaction name="screen_shot"/>
    </widget>
    <widget class="QMenu" name="About">
     <property name="title">
@@ -963,6 +964,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="screen_shot">
+   <property name="text">
+    <string>Screen Shot</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>
@@ -1369,6 +1378,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>screen_shot</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>do_screen_shot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>639</x>
+     <y>359</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>openLog()</slot>
@@ -1400,5 +1425,6 @@
   <slot>table_view_double_clicked(QModelIndex)</slot>
   <slot>goto_line()</slot>
   <slot>font()</slot>
+  <slot>do_screen_shot()</slot>
  </slots>
 </ui>

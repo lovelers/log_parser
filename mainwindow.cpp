@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_adb = new adb_online();
     m_line_dialog = new goto_line_dialog();
     m_persist_settings = new persist_settings();
+    m_snapshot = new screen_snapshot(this);
     QObject::connect(ui->msg_combobox->lineEdit(), SIGNAL(returnPressed()),
                      this, SLOT(logFilterReturnPress()));
     QObject::connect(ui->tag_edit, SIGNAL(returnPressed()),
@@ -55,6 +56,7 @@ MainWindow::~MainWindow()
     qDebug() << "main window destory";
     if (m_line_dialog) delete m_line_dialog;
     if (m_persist_settings) delete m_persist_settings;
+    if (m_snapshot) delete m_snapshot;
     check_adb_device_tiemr.stop();
     if (m_tablectrl) {
         m_tablectrl->setAdbCmd(ANDROID_STOP);
@@ -106,6 +108,13 @@ void MainWindow::goto_line() {
     m_line_dialog->show();
     m_line_dialog->activateWindow();
 }
+
+void MainWindow::do_screen_shot() {
+    qDebug() << "do screen shot";
+    //screen_snapshot *snapshot = new screen_snapshot(this);
+    m_snapshot->take_shot(this->geometry());
+}
+
 
 void MainWindow::persistSettings() {
     qDebug() << "persistSettings" << endl;

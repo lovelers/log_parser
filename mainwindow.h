@@ -10,6 +10,7 @@
 #include "adb_online.h"
 #include "goto_line_dialog.h"
 #include "persist_settings.h"
+#include "screen_snapshot.h"
 namespace Ui {
 class MainWindow;
 }
@@ -39,7 +40,7 @@ private:
 
     goto_line_dialog *m_line_dialog;
     persist_settings *m_persist_settings;
-
+    screen_snapshot *m_snapshot;
     QString m_log_open_path;
 
     void dropEvent(QDropEvent *event);
@@ -53,6 +54,7 @@ public Q_SLOTS:
     void recentlyFiles();
     void font();
     void goto_line();
+    void do_screen_shot();
     void persistSettings();
 
     void version();
