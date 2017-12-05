@@ -226,7 +226,11 @@ void table_controller::processFilterPrivate() {
     m_log_filter_lock.lock();
     qDebug() << "start process Filter Private" << endl;
     log_info_t *logData = m_model->getLogDataPtr();
-    if (logData->isEmpty()) return;
+    if (logData->isEmpty())
+    {
+        m_log_filter_lock.unlock();
+        return;
+    }
 
     log_info_t filterData;
     int row = logData->size();

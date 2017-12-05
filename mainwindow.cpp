@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(m_line_dialog, SIGNAL(sendLineNumber(int)),
                      this, SLOT(recieveLineNumber(int)));
     ui->android_stop_btn->setEnabled(false);
-
+    ui->msg_combobox->setCompleter(0);
     m_window_title.append("log parser");
     this->setWindowTitle(m_window_title);
 
