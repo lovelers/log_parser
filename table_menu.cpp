@@ -9,13 +9,9 @@ table_menu::table_menu(QWidget *parent) :
     ui->setupUi(this);
 }
 
-void table_menu::appendLog(const QString &log) {
-    ui->log_text->append(log);
-}
-
-void table_menu::clearLog() {
-    ui->log_text->clear();
-   // ui->log_text->setCursor();
+void table_menu::setLog(const QString &log) {
+    ui->log_text->setText(log);
+    //ui->log_text->document()->setHtml(log);
 }
 
 void table_menu::scrollToLine(int line) {

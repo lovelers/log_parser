@@ -14,8 +14,7 @@ class table_menu : public QDialog
 public:
     explicit table_menu(QWidget *parent = 0);
     ~table_menu();
-    void appendLog(const QString &log);
-    void clearLog();
+    void setLog(const QString &log);
     void scrollToLine(int line);
 
 private:

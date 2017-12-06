@@ -60,7 +60,7 @@ log_info_per_line_t log_config::processPerLine(const QString &str, log_type type
     int delimiter = -1;
     int delimiter1 = -1;
     if (type != checkLogType(str)) {
-        line.msg = str.trimmed();
+        line.msg = str;
         return line;
     }
     switch (type) {
@@ -74,7 +74,7 @@ log_info_per_line_t log_config::processPerLine(const QString &str, log_type type
             delimiter = str.indexOf(QChar(':'), 33);
             if (delimiter != -1) {
                 line.tag = str.mid(33, delimiter - 33);
-                line.msg = str.mid(delimiter+1).trimmed();
+                line.msg = str.mid(delimiter+1);
             }
         }
         break;
@@ -87,9 +87,9 @@ log_info_per_line_t log_config::processPerLine(const QString &str, log_type type
         if (delimiter != -1 && delimiter1 != -1 && delimiter < delimiter1) {
             line.msg = str.mid(delimiter1+1);
             line.tag = str.mid(21, delimiter-21);
-            line.pid = str.mid(delimiter+1, delimiter1 - delimiter-1).trimmed();
+            line.pid = str.mid(delimiter+1, delimiter1 - delimiter-1);
         } else {
-            line.msg = str.mid(21).trimmed();
+            line.msg = str.mid(21);
         }
         break;
 
@@ -100,13 +100,13 @@ log_info_per_line_t log_config::processPerLine(const QString &str, log_type type
         if (delimiter != -1 && delimiter1 != -1 && delimiter < delimiter1) {
             line.tag = str.mid(2, delimiter -2);
             line.pid = str.mid(delimiter+1, delimiter1 - delimiter -1);
-            line.msg = str.mid(delimiter1+1).trimmed();
+            line.msg = str.mid(delimiter1+1);
         } else {
-            line.msg = str.trimmed();
+            line.msg = str;
         }
         break;
     default:
-        line.msg = str.trimmed();
+        line.msg = str;
         break;
     }
 

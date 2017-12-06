@@ -48,27 +48,27 @@ table_controller::table_controller(QTableView *view) {
     //show more log
     m_menu =new QMenu(m_view);
 
-    m_log_copy = new QAction("copy");
-    m_log_extract = new QAction("log extract");
-    m_log_extract_with_tag = new QAction("log with same tag");
-    m_log_extract_with_pid = new QAction("log with same pid");
-    m_log_extract_with_tid = new QAction("log with same tid");
+    m_log_copy = new QAction("Copy");
+    m_log_expand = new QAction("Expand");
+    m_log_expand_by_tag = new QAction("Expand by tag");
+    m_log_expand_by_pid = new QAction("Expand by pid");
+    m_log_expand_by_tid = new QAction("Expand by tid");
     QObject::connect(m_log_copy, SIGNAL(triggered(bool)),
                      this, SLOT(logCopy()));
-    QObject::connect(m_log_extract, SIGNAL(triggered()),
-                     this, SLOT(logExtract()));
-    QObject::connect(m_log_extract_with_tag, SIGNAL(triggered(bool)),
-                     this, SLOT(logExtractWithTag()));
-    QObject::connect(m_log_extract_with_pid, SIGNAL(triggered(bool)),
-                     this, SLOT(logExtractWithPid()));
-    QObject::connect(m_log_extract_with_tid, SIGNAL(triggered(bool)),
-                     this, SLOT(logExtractWithTid()));
+    QObject::connect(m_log_expand, SIGNAL(triggered()),
+                     this, SLOT(logExpand()));
+    QObject::connect(m_log_expand_by_tag, SIGNAL(triggered(bool)),
+                     this, SLOT(logExpandByTag()));
+    QObject::connect(m_log_expand_by_pid, SIGNAL(triggered(bool)),
+                     this, SLOT(logExpandByPid()));
+    QObject::connect(m_log_expand_by_tid, SIGNAL(triggered(bool)),
+                     this, SLOT(logExpandByTid()));
 
     m_menu->addAction(m_log_copy);
-    m_menu->addAction(m_log_extract);
-    m_menu->addAction(m_log_extract_with_tag);
-    m_menu->addAction(m_log_extract_with_pid);
-    m_menu->addAction(m_log_extract_with_tid);
+    m_menu->addAction(m_log_expand);
+    m_menu->addAction(m_log_expand_by_tag);
+    m_menu->addAction(m_log_expand_by_pid);
+    m_menu->addAction(m_log_expand_by_tid);
     m_table_menu = new table_menu;
 
     m_log_online = new online_log_process();
@@ -79,10 +79,10 @@ table_controller::table_controller(QTableView *view) {
 
 table_controller::~table_controller() {
     if (m_log_copy) delete m_log_copy;
-    if (m_log_extract) delete m_log_extract;
-    if (m_log_extract_with_tag) delete m_log_extract_with_tag;
-    if (m_log_extract_with_pid) delete m_log_extract_with_pid;
-    if (m_log_extract_with_tid) delete m_log_extract_with_tid;
+    if (m_log_expand) delete m_log_expand;
+    if (m_log_expand_by_tag) delete m_log_expand_by_tag;
+    if (m_log_expand_by_pid) delete m_log_expand_by_pid;
+    if (m_log_expand_by_tid) delete m_log_expand_by_tid;
     if (m_table_menu) delete m_table_menu;
     if (m_menu) delete m_menu;
     if (m_scroll_timer) {
@@ -134,10 +134,9 @@ bool table_controller::processLogFromFile(QString &filename) {
         qDebug() << "check the type: " << ltype;
         //m_logConfig->analysisLogType(filename);
         file->seek(0);
-        QTextStream in(file);
         int line_count = 0;
-        while (!in.atEnd()) {
-            log_info_per_line = log_config::processPerLine(in.readLine().trimmed(), ltype);
+        while (!file->atEnd()) {
+            log_info_per_line = log_config::processPerLine(file->readLine(), ltype);
             log_info_per_line.line = line_count++;
             if (isFilterMatched(log_info_per_line)) {
                 filterData.append(log_info_per_line);
@@ -226,6 +225,7 @@ void table_controller::processFilterPrivate() {
     m_log_filter_lock.lock();
     qDebug() << "start process Filter Private" << endl;
     log_info_t *logData = m_model->getLogDataPtr();
+    m_delegate->updateMsgFilter(m_log_filter.msg);
     if (logData->isEmpty())
     {
         m_log_filter_lock.unlock();
@@ -248,7 +248,7 @@ void table_controller::processFilterPrivate() {
         }
     }
     m_model->setLogFilterData(filterData);
-    m_delegate->updateMsgFilter(m_log_filter.msg);
+
     qDebug() << "filter time diff " << stime.elapsed();
     m_log_filter_lock.unlock();
 }
@@ -420,283 +420,170 @@ void table_controller::tableCustomMenuRequest(QPoint point) {
     }
 }
 
-void table_controller::logExtract() {
-    QModelIndex index =
-            m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
-    qint32 row = index.row();
-    log_info_t *logDataPtr =
-            m_model->getLogDataPtr();
-    log_info_t more_log;
-    if (row < 0 ||
-            logDataPtr->size() == 0 ||
-            row > logDataPtr->size() ||
-            !m_table_menu)
-    {
-        return;
-    }
-    int line = m_model->getLogFilterDataPtr()->at(row).line;
-    qDebug() << "row = " << row << "line= " << line;
-    m_table_menu->clearLog();
-    int front_count = 0;
-    int back_count = 0;
-    QStringList log;
-    for (int i = line; i > -1; --i) {
-        QString str;
-        str.append(QString::number(logDataPtr->at(i).line));
-        str.append("\t");
-        str.append(logDataPtr->at(i).time);
-        str.append("\t");
-        str.append(logDataPtr->at(i).level);
-        str.append("\t");
-        str.append(logDataPtr->at(i).pid);
-        str.append("\t");
-        str.append(logDataPtr->at(i).tid);
-        str.append("\t");
-        str.append(logDataPtr->at(i).tag);
-        str.append("\t");
-        str.append(logDataPtr->at(i).msg);
-        log.insert(0, str);
+void table_controller::logExpand() {
+    QItemSelectionModel *selection= m_view->selectionModel();
+    log_info_t * logFilterDataPtr = m_model->getLogFilterDataPtr();
+    log_info_t * logDataPtr = m_model->getLogDataPtr();
+    if (selection->hasSelection()
+            && NULL != logFilterDataPtr
+            && NULL != logDataPtr) {
+        qDebug() << "hasSelecton";
+        //int maxLine = logDataPtr->size()-1;
+        int start = selection->selection().first().topLeft().row();
+        int end = selection->selection().first().bottomRight().row();
+        qDebug() << "start = " << start;
+        qDebug() << "end = " << end;
 
-        if (++front_count == SHOW_MORE_LINES_THRESHOLD) {
-            break;
+        int logStart = logFilterDataPtr->at(start).line;
+        int logEnd = logFilterDataPtr->at(end).line;
+        int select = 0;
+
+        if (logStart == logEnd)
+        {
+            //Do Nothing.
+            return;
         }
-    }
-    for (int i = line+1; i < logDataPtr->size(); ++i) {
-        QString str;
-        str.append(QString::number(logDataPtr->at(i).line));
-        str.append("\t");
-        str.append(logDataPtr->at(i).time);
-        str.append("\t");
-        str.append(logDataPtr->at(i).level);
-        str.append("\t");
-        str.append(logDataPtr->at(i).pid);
-        str.append("\t");
-        str.append(logDataPtr->at(i).tid);
-        str.append("\t");
-        str.append(logDataPtr->at(i).tag);
-        str.append("\t");
-        str.append(logDataPtr->at(i).msg);
-        log.append(str);
-        if (++back_count == SHOW_MORE_LINES_THRESHOLD) {
-            break;
+
+        QString log;
+        qDebug() << "logStart = " << logStart;
+        qDebug() << "logEnd = " << logEnd;
+        for (int i = logStart; i <= logEnd; ++i)
+        {
+            log.append(QString::number(logDataPtr->at(i).line));
+            log.append("\t");
+            log.append(logDataPtr->at(i).time);
+            log.append("\t");
+            log.append(logDataPtr->at(i).level);
+            log.append("\t");
+            log.append(logDataPtr->at(i).pid);
+            log.append("\t");
+            log.append(logDataPtr->at(i).tid);
+            log.append("\t");
+            log.append(logDataPtr->at(i).tag);
+            log.append("\t");
+            log.append(logDataPtr->at(i).msg);
+            //log.append("\n");
         }
+        m_table_menu->setLog(log);
+        m_table_menu->scrollToLine(select);
+        m_table_menu->show();
+        m_table_menu->activateWindow();
     }
-    m_table_menu->appendLog(log.join("\n"));
-    m_table_menu->scrollToLine(front_count);
-    m_table_menu->show();
-    m_table_menu->activateWindow();
 }
 
-void table_controller::logExtractWithTag() {
-    QModelIndex index =
-            m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
-    qint32 row = index.row();
-    log_info_t *logDataPtr =
-            m_model->getLogDataPtr();
-    log_info_t more_log;
-    if (row < 0 ||
-            logDataPtr->size() == 0 ||
-            row > logDataPtr->size() ||
-            !m_table_menu)
-    {
-        return;
-    }
-    int line = m_model->getLogFilterDataPtr()->at(row).line;
-    qDebug() << "row = " << row << "line= " << line;
-    m_table_menu->clearLog();
-    QString match_tag = logDataPtr->at(line).tag;
-    int front_count = 0;
-    int back_count = 0;
-    QStringList log;
-    for (int i  = line; i > -1; --i) {
-        if (logDataPtr->at(i).tag.compare(match_tag) == 0) {
-            QString str;
-            str.append(QString::number(logDataPtr->at(i).line));
-            str.append("\t");
-            str.append(logDataPtr->at(i).time);
-            str.append("\t");
-            str.append(logDataPtr->at(i).level);
-            str.append("\t");
-            str.append(logDataPtr->at(i).pid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tag);
-            str.append("\t");
-            str.append(logDataPtr->at(i).msg);
-            log.insert(0, str);
-            if (++front_count == SHOW_MORE_LINES_THRESHOLD) {
+void table_controller::logExpandByType(TABLE_COL_TYPE type)
+{
+    QItemSelectionModel *selection= m_view->selectionModel();
+    log_info_t * logFilterDataPtr = m_model->getLogFilterDataPtr();
+    log_info_t * logDataPtr = m_model->getLogDataPtr();
+    int maxLine = logDataPtr->size();
+    int line = 0;
+    QString match;
+    QString log;
+    int select = 0;
+    if (selection->hasSelection()
+            && NULL != logFilterDataPtr
+            && NULL != logDataPtr) {
+        qDebug() << "hasSelecton";
+        line = selection->selection().first().topLeft().row();
+        switch (type)
+        {
+            case TABLE_COL_TYPE_TAG:
+                match = logFilterDataPtr->at(line).tag;
+                for (int i = 0; i < maxLine; i++)
+                {
+                    if (logDataPtr->at(i).tag.compare(match) == 0) {
+                        log.append(QString::number(logDataPtr->at(i).line));
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).time);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).level);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).pid);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).tid);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).tag);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).msg);
+                        //log.append("\n");
+                        if (i <= line)
+                        {
+                            select++;
+                        }
+                    }
+                }
                 break;
-            }
+            case TABLE_COL_TYPE_PID:
+                match = logFilterDataPtr->at(line).pid;
+                for (int i = 0; i < maxLine; i++)
+                {
+                    if (logDataPtr->at(i).pid.compare(match) == 0) {
+                        log.append(QString::number(logDataPtr->at(i).line));
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).time);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).level);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).pid);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).tid);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).tag);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).msg);
+                        //log.append("\n");
+                        if (i <= line)
+                        {
+                            select++;
+                        }
+                    }
+                }
+                break;
+            case TABLE_COL_TYPE_TID:
+                match = logFilterDataPtr->at(line).tid;
+                for (int i = 0; i < maxLine; i++)
+                {
+                    if (logDataPtr->at(i).tid.compare(match) == 0) {
+                        log.append(QString::number(logDataPtr->at(i).line));
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).time);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).level);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).pid);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).tid);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).tag);
+                        log.append("\t");
+                        log.append(logDataPtr->at(i).msg);
+                        //log.append("\n");
+                        if (i <= line)
+                        {
+                            select++;
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
         }
+        m_table_menu->setLog(log);
+        m_table_menu->scrollToLine(select);
+        m_table_menu->show();
+        m_table_menu->activateWindow();
     }
-    for (int i = line; i < logDataPtr->size(); ++i) {
-        if (logDataPtr->at(i).tag.compare(match_tag) == 0) {
-            QString str;
-            str.append(QString::number(logDataPtr->at(i).line));
-            str.append("\t");
-            str.append(logDataPtr->at(i).time);
-            str.append("\t");
-            str.append(logDataPtr->at(i).level);
-            str.append("\t");
-            str.append(logDataPtr->at(i).pid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tag);
-            str.append("\t");
-            str.append(logDataPtr->at(i).msg);
-            log.append(str);
-            if (++back_count == SHOW_MORE_LINES_THRESHOLD) {
-                break;
-            }
+}
 
-        }
-    }
-    m_table_menu->appendLog(log.join("\n"));
-    m_table_menu->scrollToLine(front_count);
-    m_table_menu->show();
-    m_table_menu->activateWindow();
+void table_controller::logExpandByTag() {
+    logExpandByType(TABLE_COL_TYPE_TAG);
 }
-void table_controller::logExtractWithPid() {
-    QModelIndex index =
-            m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
-    qint32 row = index.row();
-    log_info_t *logDataPtr =
-            m_model->getLogDataPtr();
-    log_info_t more_log;
-    if (row < 0 ||
-            logDataPtr->size() == 0 ||
-            row > logDataPtr->size() ||
-            !m_table_menu)
-    {
-        return;
-    }
-    int line = m_model->getLogFilterDataPtr()->at(row).line;
-    qDebug() << "row = " << row << "line= " << line;
-    m_table_menu->clearLog();
-    QString match_pid = logDataPtr->at(line).pid;
-    int front_count = 0;
-    int back_count = 0;
-    QStringList log;
-    for (int i  = line; i > -1; --i) {
-        if (logDataPtr->at(i).pid.compare(match_pid) == 0) {
-            QString str;
-            str.append(QString::number(logDataPtr->at(i).line));
-            str.append("\t");
-            str.append(logDataPtr->at(i).time);
-            str.append("\t");
-            str.append(logDataPtr->at(i).level);
-            str.append("\t");
-            str.append(logDataPtr->at(i).pid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tag);
-            str.append("\t");
-            str.append(logDataPtr->at(i).msg);
-            log.insert(0, str);
-            if (++front_count == SHOW_MORE_LINES_THRESHOLD) {
-                break;
-            }
-        }
-    }
-    for (int i = line; i < logDataPtr->size(); ++i) {
-        if (logDataPtr->at(i).pid.compare(match_pid) == 0) {
-            QString str;
-            str.append(QString::number(logDataPtr->at(i).line));
-            str.append("\t");
-            str.append(logDataPtr->at(i).time);
-            str.append("\t");
-            str.append(logDataPtr->at(i).level);
-            str.append("\t");
-            str.append(logDataPtr->at(i).pid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tag);
-            str.append("\t");
-            str.append(logDataPtr->at(i).msg);
-            log.append(str);
-            if (++back_count == SHOW_MORE_LINES_THRESHOLD) {
-                break;
-            }
-        }
-    }
-    m_table_menu->appendLog(log.join("\n"));
-    m_table_menu->scrollToLine(front_count);
-    m_table_menu->show();
-    m_table_menu->activateWindow();
+void table_controller::logExpandByPid() {
+    logExpandByType(TABLE_COL_TYPE_PID);
 }
-void table_controller::logExtractWithTid() {
-    QModelIndex index =
-            m_view->indexAt(m_view->viewport()->mapFromGlobal(m_menu->pos()));
-    qint32 row = index.row();
-    log_info_t *logDataPtr =
-            m_model->getLogDataPtr();
-    log_info_t more_log;
-    if (row < 0 ||
-            logDataPtr->size() == 0 ||
-            row > logDataPtr->size() ||
-            !m_table_menu)
-    {
-        return;
-    }
-    int line = m_model->getLogFilterDataPtr()->at(row).line;
-    qDebug() << "row = " << row << "line= " << line;
-    m_table_menu->clearLog();
-    QString match_tid = logDataPtr->at(line).tid;
-    int front_count = 0;
-    int back_count = 0;
-    QStringList log;
-    for (int i  = line; i > -1; --i) {
-        if (logDataPtr->at(i).tid.compare(match_tid) == 0) {
-            QString str;
-            str.append(QString::number(logDataPtr->at(i).line));
-            str.append("\t");
-            str.append(logDataPtr->at(i).time);
-            str.append("\t");
-            str.append(logDataPtr->at(i).level);
-            str.append("\t");
-            str.append(logDataPtr->at(i).pid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tag);
-            str.append("\t");
-            str.append(logDataPtr->at(i).msg);
-            log.insert(0, str);
-            if (++front_count == SHOW_MORE_LINES_THRESHOLD) {
-                break;
-            }
-        }
-    }
-    for (int i = line; i < logDataPtr->size(); ++i) {
-        if (logDataPtr->at(i).tid.compare(match_tid) == 0) {
-            QString str;
-            str.append(QString::number(logDataPtr->at(i).line));
-            str.append("\t");
-            str.append(logDataPtr->at(i).time);
-            str.append("\t");
-            str.append(logDataPtr->at(i).level);
-            str.append("\t");
-            str.append(logDataPtr->at(i).pid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tag);
-            str.append("\t");
-            str.append(logDataPtr->at(i).msg);
-            log.append(str);
-            if (++back_count == SHOW_MORE_LINES_THRESHOLD) {
-                break;
-            }
-        }
-    }
-    m_table_menu->appendLog(log.join("\n"));
-    m_table_menu->scrollToLine(front_count);
-    m_table_menu->show();
-    m_table_menu->activateWindow();
+void table_controller::logExpandByTid() {
+    logExpandByType(TABLE_COL_TYPE_TID);
 }
 
 void table_controller::setOnLineLogFile(QString path) {
@@ -741,7 +628,7 @@ void online_log_process::run() {
     while (m_cmd != ANDROID_STOP) {
         if (file.isReadable() && m_cmd != ANDROID_PAUSE) {
             line = line.append(file.readLine());
-            if (line.contains('\n')) {
+            if (line.endsWith('\n')) {
                 emit signalLogOnline(line, line_count++);
                 line.clear();
             } else {
@@ -758,33 +645,30 @@ void table_controller::logCopy() {
     QItemSelectionModel *selection= m_view->selectionModel();
     if (selection->hasSelection()) {
         qDebug() << "hasSelecton";
-        QString str;
         QString text;
-        log_info_t * logDataPtr = m_model->getLogDataPtr();
+        log_info_t * logDataPtr = m_model->getLogFilterDataPtr();
         int start = selection->selection().first().topLeft().row();
         int end = selection->selection().first().bottomRight().row();
         qDebug() << "start = " << start;
         qDebug() << "end = " << end;
         for (int i = start; i <= end; i++) {
-            str.clear();
-            str.append(QString::number(logDataPtr->at(i).line));
-            str.append("\t");
-            str.append(logDataPtr->at(i).time);
-            str.append("\t");
-            str.append(logDataPtr->at(i).level);
-            str.append("\t");
-            str.append(logDataPtr->at(i).pid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tid);
-            str.append("\t");
-            str.append(logDataPtr->at(i).tag);
-            str.append("\t");
-            str.append(logDataPtr->at(i).msg);
-            str.append("\n");
-            qDebug() << "i = " << i << ":" << str;
-            text.append(str);
+            text.append(QString::number(logDataPtr->at(i).line));
+            text.append("\t");
+            text.append(logDataPtr->at(i).time);
+            text.append("\t");
+            text.append(logDataPtr->at(i).level);
+            text.append("\t");
+            text.append(logDataPtr->at(i).pid);
+            text.append("\t");
+            text.append(logDataPtr->at(i).tid);
+            text.append("\t");
+            text.append(logDataPtr->at(i).tag);
+            text.append("\t");
+            text.append(logDataPtr->at(i).msg);
+            //text.append("\n");
         }
         QApplication::clipboard()->setText(text);
+        qDebug()<<"copy" << text;
         return;
     }
     return;

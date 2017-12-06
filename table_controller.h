@@ -55,10 +55,10 @@ private:
 
     QMenu *m_menu;
     QAction *m_log_copy;
-    QAction *m_log_extract;
-    QAction *m_log_extract_with_tag;
-    QAction *m_log_extract_with_pid;
-    QAction *m_log_extract_with_tid;
+    QAction *m_log_expand;
+    QAction *m_log_expand_by_tag;
+    QAction *m_log_expand_by_pid;
+    QAction *m_log_expand_by_tid;
     table_menu *m_table_menu;
 
     qint32 m_column_visible;
@@ -84,7 +84,7 @@ private:
     void android_clear();
     void android_resume();
     void android_pause();
-
+    void logExpandByType(TABLE_COL_TYPE type);
 public:
     table_controller(QTableView *table);
     ~table_controller();
@@ -104,10 +104,10 @@ public slots:
     void processLogOnline(QString str, int line_count);
     void scrollToBottom();
     void tableCustomMenuRequest(QPoint point);
-    void logExtract();
-    void logExtractWithTag();
-    void logExtractWithPid();
-    void logExtractWithTid();
+    void logExpand();
+    void logExpandByTag();
+    void logExpandByPid();
+    void logExpandByTid();
     void logCopy();
 
     void setOnLineLogFile(QString path);
