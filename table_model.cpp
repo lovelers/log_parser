@@ -1,5 +1,7 @@
 #include "table_model.h"
 #include <QDebug>
+
+static const int MAX_LOG_INFO_COUNT = 2000000;
 table_model::table_model(QObject *parent):
     QAbstractTableModel(parent)
 {
@@ -75,6 +77,10 @@ bool table_model::setData(const QModelIndex &index, const QVariant &value, int r
 void table_model::appendLogData(const log_info_per_line_t &data) {
     this->beginResetModel();
     log_data_lock.lock();
+    if (log_data.size() > MAX_LOG_INFO_COUNT)
+    {
+        log_data.removeFirst();
+    }
     log_data.append(data);
     log_data_lock.unlock();
     this->endResetModel();
@@ -109,6 +115,10 @@ log_info_t * table_model::getLogFilterDataPtr() {
 void table_model::setLogFilterData(const log_info_t &data) {
     this->beginResetModel();
     filter_data_lock.lock();
+    if (filter_data.size() > MAX_LOG_INFO_COUNT)
+    {
+        filter_data.removeFirst();
+    }
     filter_data = data;
     filter_data_lock.unlock();
     this->endResetModel();
