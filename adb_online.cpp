@@ -15,6 +15,10 @@ adb_online::adb_online()
                      this, SLOT(processError(QProcess::ProcessError)));
     QObject::connect(&m_process, SIGNAL(started()),
                      this, SLOT(started()));
+
+    QObject::connect(&m_file_timer, SIGNAL(timeout()),
+                     this, SLOT(checkFileSize()));
+
     qDebug() << "get read channel" << m_process.readChannel();
     m_process.setReadChannel(QProcess::StandardOutput);
     m_curType = ANDROID_UNKNOWN;
@@ -29,6 +33,7 @@ void adb_online::setCmd(ANDROID_ONLINE_CMD type) {
     switch (type) {
     case ANDROID_RUN:
         android_run();
+        m_file_timer.start(1000);
         break;
     case ANDROID_RESUME:
         android_resume();
@@ -38,6 +43,7 @@ void adb_online::setCmd(ANDROID_ONLINE_CMD type) {
         break;
     case ANDROID_STOP:
         android_stop();
+        m_file_timer.stop();
         break;
     case ANDROID_PAUSE:
         android_pause();
@@ -87,9 +93,9 @@ void adb_online::android_clear() {
     //android_stop();
     QProcess process;
     process.start("adb", QStringList() << "logcat -c");
-    bool finished = process.waitForFinished(1000);
+    bool finished = process.waitForFinished(3000);
     qDebug() << "wiat for finished:" << finished;
-    process.close();
+    process.kill();
     process.destroyed();
 }
 
@@ -114,6 +120,19 @@ void adb_online::processError(QProcess::ProcessError processError){
 
 }
 
+void adb_online::checkFileSize()
+{
+    if (m_process.isOpen())
+    {
+        QFileInfo info(m_file_path);
+        if (info.size() > 50000000) // 50Mb
+        {
+            m_process.kill();
+        }
+    }
+}
+
+
 adb_online::~adb_online() {
     m_process.kill();
     m_process.waitForFinished();
@@ -129,13 +148,19 @@ QStringList adb_online::checkDevices() {
     process.waitForFinished(100);//200ms;
     QStringList list;
     do {
-        QString str = process.readLine();
-        if (str.isEmpty()) {
+        if (!process.canReadLine())
+        {
             break;
         }
-        int idx = str.indexOf("\tdevice");
+        QString str = process.readLine();
+
+        if (str.contains("List of devices"))
+        {
+            continue;
+        }
+        int idx = str.indexOf("device");
         if (idx != -1) {
-            list << str.mid(0, idx);
+            list << str.mid(0, idx).trimmed();
         }
         //qDebug() << str;
     } while (true);
@@ -190,7 +215,7 @@ void adb_online::adbRestartCamera() {
     qDebug() << "restart cameraservice";
     process.start("adb", QStringList() << "wait-for-device" << "shell" << "pkill" << "-l" << "9" << "camera");
     process.waitForFinished(10000);
-    process.close();
+    process.kill();
     process.destroyed();
 }
 
@@ -199,7 +224,7 @@ void adb_online::adbKillServer() {
     qDebug() << "restart server";
     process.start("adb", QStringList() << "kill-server");
     process.waitForFinished(1000);
-    process.close();
+    process.kill();
     process.destroyed();
 }
 
@@ -208,7 +233,7 @@ void adb_online::adbStartServer() {
     qDebug() << "start server";
     process.start("adb", QStringList() << "start-server");
     process.waitForFinished(2000);
-    process.close();
+    process.kill();
     process.destroyed();
 }
 

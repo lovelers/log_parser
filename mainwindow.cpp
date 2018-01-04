@@ -391,7 +391,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->matches(QKeySequence::Copy)
             && ui->TableView->isActiveWindow()) {
-        //m_tablectrl->myCopy();
+        //m_tablectrl->logCopy();
         return;
     }
     QWidget::keyPressEvent(event);

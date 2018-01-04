@@ -75,15 +75,11 @@ bool table_model::setData(const QModelIndex &index, const QVariant &value, int r
 }
 
 void table_model::appendLogData(const log_info_per_line_t &data) {
-    this->beginResetModel();
+    //this->beginResetModel();
     log_data_lock.lock();
-    if (log_data.size() > MAX_LOG_INFO_COUNT)
-    {
-        log_data.removeFirst();
-    }
     log_data.append(data);
     log_data_lock.unlock();
-    this->endResetModel();
+    //this->endResetModel();
 }
 
 void table_model::setLogData(const log_info_t &data) {
@@ -115,10 +111,6 @@ log_info_t * table_model::getLogFilterDataPtr() {
 void table_model::setLogFilterData(const log_info_t &data) {
     this->beginResetModel();
     filter_data_lock.lock();
-    if (filter_data.size() > MAX_LOG_INFO_COUNT)
-    {
-        filter_data.removeFirst();
-    }
     filter_data = data;
     filter_data_lock.unlock();
     this->endResetModel();

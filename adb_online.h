@@ -6,6 +6,7 @@
 #include <QTextEdit>
 #include <QDebug>
 #include <QFile>
+#include <QTimer>
 #include "config.h"
 
 class adb_online : public QObject
@@ -21,6 +22,7 @@ private:
     QProcess m_process;
     ANDROID_ONLINE_CMD m_curType;
     QString m_file_path;
+    QTimer m_file_timer;
     void android_run();
     void android_stop();
     void android_clear();
@@ -33,9 +35,9 @@ public slots:
     void processFinished(int, QProcess::ExitStatus);
     void processError(QProcess::ProcessError);
     void started();
+    void checkFileSize();
 
 signals:
-    //void processLogOnline(const QByteArray &list,int line_count);
     void logOnlinePath(QString path);
 public:
     static QStringList checkDevices();

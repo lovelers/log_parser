@@ -53,6 +53,7 @@ table_controller::table_controller(QTableView *view) {
     m_log_expand_by_tag = new QAction("Expand by tag");
     m_log_expand_by_pid = new QAction("Expand by pid");
     m_log_expand_by_tid = new QAction("Expand by tid");
+
     QObject::connect(m_log_copy, SIGNAL(triggered(bool)),
                      this, SLOT(logCopy()));
     QObject::connect(m_log_expand, SIGNAL(triggered()),
@@ -441,7 +442,9 @@ void table_controller::logExpand() {
         if (logStart == logEnd)
         {
             //Do Nothing.
-            return;
+            select = MIN(logStart, 200+1);
+            logStart = MAX(0, logStart - 200);
+            logEnd = MIN(logDataPtr->last().line, logEnd + 200);
         }
 
         QString log;
@@ -669,6 +672,7 @@ void table_controller::logCopy() {
         }
         QApplication::clipboard()->setText(text);
         qDebug()<<"copy" << text;
+
         return;
     }
     return;

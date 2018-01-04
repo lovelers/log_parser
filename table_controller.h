@@ -100,6 +100,7 @@ public:
     void recieveLineNumber(int line);
     void closeWindow();
 
+
 public slots:
     void processLogOnline(QString str, int line_count);
     void scrollToBottom();
@@ -109,7 +110,6 @@ public slots:
     void logExpandByPid();
     void logExpandByTid();
     void logCopy();
-
     void setOnLineLogFile(QString path);
 };
 
