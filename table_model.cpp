@@ -70,10 +70,6 @@ Qt::ItemFlags table_model::flags(const QModelIndex &index) const
     return QAbstractTableModel::flags(index)| Qt::ItemIsDropEnabled;
 }
 
-bool table_model::setData(const QModelIndex &index, const QVariant &value, int role) {
-    return false;
-}
-
 void table_model::appendLogData(const log_info_per_line_t &data) {
     //this->beginResetModel();
     log_data_lock.lock();

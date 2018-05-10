@@ -64,6 +64,8 @@ table_controller::table_controller(QTableView *view) {
                      this, SLOT(logExpandByPid()));
     QObject::connect(m_log_expand_by_tid, SIGNAL(triggered(bool)),
                      this, SLOT(logExpandByTid()));
+    QObject::connect(m_view, SIGNAL(doubleClicked(QModelIndex)),
+                     this, SLOT(tableDoubleClick(QModelIndex)));
 
     m_menu->addAction(m_log_copy);
     m_menu->addAction(m_log_expand);
@@ -137,7 +139,7 @@ bool table_controller::processLogFromFile(QString &filename) {
         file->seek(0);
         int line_count = 0;
         while (!file->atEnd()) {
-            log_info_per_line = log_config::processPerLine(file->readLine(), ltype);
+            log_info_per_line = log_config::processPerLine(file->readLine().trimmed(), ltype);
             log_info_per_line.line = line_count++;
             if (isFilterMatched(log_info_per_line)) {
                 filterData.append(log_info_per_line);
@@ -341,7 +343,7 @@ void table_controller::processLogOnline(QString str, int line_count) {
     //qDebug() << bArray;
     if (str.size() < 50)
         str.resize(50);
-    log_info_per_line_t vec = m_logConfig->processPerLine(str);
+    log_info_per_line_t vec = log_config::processPerLine(str);
     vec.line = line_count;
 
     m_model->appendLogData(vec);
@@ -423,8 +425,9 @@ void table_controller::tableCustomMenuRequest(QPoint point) {
 
 void table_controller::logExpand() {
     QItemSelectionModel *selection= m_view->selectionModel();
-    log_info_t * logFilterDataPtr = m_model->getLogFilterDataPtr();
-    log_info_t * logDataPtr = m_model->getLogDataPtr();
+    log_info_t* logFilterDataPtr = m_model->getLogFilterDataPtr();
+    log_info_t* logDataPtr = m_model->getLogDataPtr();
+
     if (selection->hasSelection()
             && NULL != logFilterDataPtr
             && NULL != logDataPtr) {
@@ -442,7 +445,7 @@ void table_controller::logExpand() {
         if (logStart == logEnd)
         {
             //Do Nothing.
-            select = MIN(logStart, 200+1);
+            select = MIN(logStart, 200);
             logStart = MAX(0, logStart - 200);
             logEnd = MIN(logDataPtr->last().line, logEnd + 200);
         }
@@ -453,6 +456,8 @@ void table_controller::logExpand() {
         for (int i = logStart; i <= logEnd; ++i)
         {
             log.append(QString::number(logDataPtr->at(i).line));
+            log.append("\t");
+            log.append(logDataPtr->at(i).date);
             log.append("\t");
             log.append(logDataPtr->at(i).time);
             log.append("\t");
@@ -465,10 +470,10 @@ void table_controller::logExpand() {
             log.append(logDataPtr->at(i).tag);
             log.append("\t");
             log.append(logDataPtr->at(i).msg);
-            //log.append("\n");
+            log.append("\n");
         }
         m_table_menu->setLog(log);
-        m_table_menu->scrollToLine(select);
+        m_table_menu->scrollToLine(select+1);
         m_table_menu->show();
         m_table_menu->activateWindow();
     }
@@ -498,6 +503,8 @@ void table_controller::logExpandByType(TABLE_COL_TYPE type)
                     if (logDataPtr->at(i).tag.compare(match) == 0) {
                         log.append(QString::number(logDataPtr->at(i).line));
                         log.append("\t");
+                        log.append(logDataPtr->at(i).date);
+                        log.append("\t");
                         log.append(logDataPtr->at(i).time);
                         log.append("\t");
                         log.append(logDataPtr->at(i).level);
@@ -509,7 +516,7 @@ void table_controller::logExpandByType(TABLE_COL_TYPE type)
                         log.append(logDataPtr->at(i).tag);
                         log.append("\t");
                         log.append(logDataPtr->at(i).msg);
-                        //log.append("\n");
+                        log.append("\n");
                         if (i <= line)
                         {
                             select++;
@@ -524,6 +531,8 @@ void table_controller::logExpandByType(TABLE_COL_TYPE type)
                     if (logDataPtr->at(i).pid.compare(match) == 0) {
                         log.append(QString::number(logDataPtr->at(i).line));
                         log.append("\t");
+                        log.append(logDataPtr->at(i).date);
+                        log.append("\t");
                         log.append(logDataPtr->at(i).time);
                         log.append("\t");
                         log.append(logDataPtr->at(i).level);
@@ -535,7 +544,7 @@ void table_controller::logExpandByType(TABLE_COL_TYPE type)
                         log.append(logDataPtr->at(i).tag);
                         log.append("\t");
                         log.append(logDataPtr->at(i).msg);
-                        //log.append("\n");
+                        log.append("\n");
                         if (i <= line)
                         {
                             select++;
@@ -550,6 +559,8 @@ void table_controller::logExpandByType(TABLE_COL_TYPE type)
                     if (logDataPtr->at(i).tid.compare(match) == 0) {
                         log.append(QString::number(logDataPtr->at(i).line));
                         log.append("\t");
+                        log.append(logDataPtr->at(i).date);
+                        log.append("\t");
                         log.append(logDataPtr->at(i).time);
                         log.append("\t");
                         log.append(logDataPtr->at(i).level);
@@ -561,7 +572,7 @@ void table_controller::logExpandByType(TABLE_COL_TYPE type)
                         log.append(logDataPtr->at(i).tag);
                         log.append("\t");
                         log.append(logDataPtr->at(i).msg);
-                        //log.append("\n");
+                        log.append("\n");
                         if (i <= line)
                         {
                             select++;
@@ -602,6 +613,12 @@ void table_controller::setOnLineLogFile(QString path) {
     }
 }
 
+void table_controller::tableDoubleClick(const QModelIndex &index)
+{
+    qDebug() << "index = " << index.row() << endl;
+    logExpand();
+}
+
 online_log_process::online_log_process() {
     m_path.clear();
 }
@@ -627,12 +644,12 @@ void online_log_process::run() {
     }
     int line_count = 0;
 
-    register QString line;
+    QString line;
     while (m_cmd != ANDROID_STOP) {
         if (file.isReadable() && m_cmd != ANDROID_PAUSE) {
             line = line.append(file.readLine());
             if (line.endsWith('\n')) {
-                emit signalLogOnline(line, line_count++);
+                emit signalLogOnline(line.trimmed(), line_count++);
                 line.clear();
             } else {
                 //qDebug() << "not a full line: " << line;
@@ -657,6 +674,8 @@ void table_controller::logCopy() {
         for (int i = start; i <= end; i++) {
             text.append(QString::number(logDataPtr->at(i).line));
             text.append("\t");
+            text.append(logDataPtr->at(i).date);
+            text.append("\t");
             text.append(logDataPtr->at(i).time);
             text.append("\t");
             text.append(logDataPtr->at(i).level);
@@ -668,11 +687,10 @@ void table_controller::logCopy() {
             text.append(logDataPtr->at(i).tag);
             text.append("\t");
             text.append(logDataPtr->at(i).msg);
-            //text.append("\n");
+            text.append("\n");
         }
         QApplication::clipboard()->setText(text);
         qDebug()<<"copy" << text;
-
         return;
     }
     return;

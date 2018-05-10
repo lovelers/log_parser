@@ -17,5 +17,4 @@ typedef enum {
     ANDROID_PAUSE,
 } ANDROID_ONLINE_CMD;
 
-
 #endif // CONFIG_H

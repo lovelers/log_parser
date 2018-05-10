@@ -105,12 +105,13 @@ public slots:
     void processLogOnline(QString str, int line_count);
     void scrollToBottom();
     void tableCustomMenuRequest(QPoint point);
+    void logCopy();
     void logExpand();
     void logExpandByTag();
     void logExpandByPid();
     void logExpandByTid();
-    void logCopy();
     void setOnLineLogFile(QString path);
+    void tableDoubleClick(const QModelIndex &index);
 };
 
 #endif // table_controller_H

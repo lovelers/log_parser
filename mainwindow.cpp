@@ -33,7 +33,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QObject::connect(m_adb, SIGNAL(logOnlinePath(QString)),
                      this, SLOT(logOnlinePath(QString)));
-
     m_line_dialog->setModal(true);
     QObject::connect(m_line_dialog, SIGNAL(sendLineNumber(int)),
                      this, SLOT(recieveLineNumber(int)));
@@ -373,10 +372,19 @@ void MainWindow::recieveLineNumber(int line) {
     }
 }
 
+void MainWindow::logCopy()
+{
+    if (m_tablectrl && ui->TableView->isActiveWindow())
+    {
+        m_tablectrl->logCopy();
+    }
+}
+
 void MainWindow::dropEvent(QDropEvent *event) {
     const QMimeData *data = event->mimeData();
     if (data->hasUrls()) {
         if (data->urls().at(0).isLocalFile()) {
+            android_stop();
             QString filename = data->urls().at(0).toLocalFile();
             this->setWindowTitle(m_window_title + ":" + filename);
             m_tablectrl->processLogFromFile(filename);
@@ -389,11 +397,6 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-    if (event->matches(QKeySequence::Copy)
-            && ui->TableView->isActiveWindow()) {
-        //m_tablectrl->logCopy();
-        return;
-    }
     QWidget::keyPressEvent(event);
 }
 

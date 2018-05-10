@@ -92,6 +92,8 @@ public Q_SLOTS:
     void table_view_double_clicked(QModelIndex index);
 
     void recieveLineNumber(int);
+
+    void logCopy();
 };
 
 #endif // MAINWINDOW_H

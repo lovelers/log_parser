@@ -889,6 +889,7 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="copy"/>
     <addaction name="font"/>
     <addaction name="persist"/>
     <addaction name="goto_line"/>
@@ -980,6 +981,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="copy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
    </property>
   </action>
  </widget>
@@ -1402,6 +1411,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>copy</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>logCopy()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>639</x>
+     <y>359</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>openLog()</slot>
@@ -1434,5 +1459,6 @@
   <slot>goto_line()</slot>
   <slot>font()</slot>
   <slot>do_screen_shot()</slot>
+  <slot>logCopy()</slot>
  </slots>
 </ui>

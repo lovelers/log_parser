@@ -152,7 +152,7 @@ log_type log_config::checkLogType(const QString &str) {
         int s = str.indexOf(QChar(':'), 20);
         if (s != -1) {
             QRegularExpression re;
-            re.setPattern("\([\\s]*\\d+\)");
+            re.setPattern("([\\s]*\\d+\)");
             QRegularExpressionMatch match = re.match(str.mid(20, s-20));
             if (match.hasMatch()) {
                 return LOGCAT_TIME;
@@ -171,7 +171,7 @@ log_type log_config::checkLogType(const QString &str) {
         int s = str.indexOf(QChar(':'),2);
         if (s != -1) {
             QRegularExpression re;
-            re.setPattern("\([\\s]*\\d+\)");
+            re.setPattern("([\\s]*\\d+\)");
             QRegularExpressionMatch match = re.match(str.mid(2, s-2));
             if (match.hasMatch()) return LOGCAT;
         }

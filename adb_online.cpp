@@ -28,6 +28,11 @@ adb_online::adb_online()
 
 void adb_online::setCmd(ANDROID_ONLINE_CMD type) {
     qDebug() << __func__ << "type: " << type;
+    if (ANDROID_CLEAR == type)
+    {
+        android_clear();
+        m_curType = type;
+    }
     if (m_curType == type) return;
     m_curType = type;
     switch (type) {
@@ -37,9 +42,6 @@ void adb_online::setCmd(ANDROID_ONLINE_CMD type) {
         break;
     case ANDROID_RESUME:
         android_resume();
-        break;
-    case ANDROID_CLEAR:
-        android_clear();
         break;
     case ANDROID_STOP:
         android_stop();
@@ -56,14 +58,13 @@ void adb_online::setCmd(ANDROID_ONLINE_CMD type) {
 
 void adb_online::android_run() {
     // when start run, clear the cache logs first.
-    android_clear();
+    // android_clear();
 
     QString shell;
     QStringList cmd;
     if (m_process.state() == QProcess::Running) {
         m_process.close();
     }
-
 
     m_file_path = QDir::currentPath() + "/"
             + LOG_OUTPUT_DIR + "/"
@@ -90,13 +91,14 @@ void adb_online::android_stop() {
 }
 
 void adb_online::android_clear() {
-    //android_stop();
+    android_stop();
     QProcess process;
-    process.start("adb", QStringList() << "logcat -c");
+    process.start("adb", QStringList() << "logcat" << "-c");
     bool finished = process.waitForFinished(3000);
     qDebug() << "wiat for finished:" << finished;
     process.kill();
     process.destroyed();
+    android_run();
 }
 
 void adb_online::processFinished(int exitCode , QProcess::ExitStatus exitStatus) {
@@ -104,8 +106,8 @@ void adb_online::processFinished(int exitCode , QProcess::ExitStatus exitStatus)
                 <<", exitStatus = " << exitStatus;
     if (m_curType != ANDROID_STOP) {
         qDebug() << "finished unexpected! run process again";
-        adbKillServer();
-        adbStartServer();
+        //adbKillServer();
+        //adbStartServer();
         android_run();
     }
 }

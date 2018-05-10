@@ -16,7 +16,6 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     void setLogData(const log_info_t &data);
     void appendLogData(const log_info_per_line_t &data);
     void clearData();
