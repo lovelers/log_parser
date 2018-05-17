@@ -19,7 +19,7 @@ void table_item_delegate::paint(QPainter *painter, const QStyleOptionViewItem &o
             //const QFont& font =  painter->font();
             QString str = index.data().toString();
             for (int i = 0; i < msgFilter.size(); i++) {
-                int index = str.indexOf(msgFilter.at(i));
+                int index = str.indexOf(msgFilter.at(i), 0, Qt::CaseInsensitive);
                 if (index != -1) {
                     int mark_end = str.indexOf("</font>", index);
                     int mark_start;

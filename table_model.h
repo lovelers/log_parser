@@ -24,6 +24,7 @@ public:
     void appendLogFilterData(const log_info_per_line_t &data);
     log_info_t *getLogFilterDataPtr();
     QModelIndex getModexIndex(int line, int col);
+    int getLogDataLastLine() const;
 private:
     log_config *m_log_config;
     log_info_t log_data;

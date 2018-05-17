@@ -120,6 +120,10 @@ void table_model::appendLogFilterData(const log_info_per_line_t &data) {
     this->endResetModel();
 }
 
+int table_model::getLogDataLastLine() const {
+    return log_data.at(log_data.size()-1).line;
+}
+
 QModelIndex table_model::getModexIndex(int line, int col) {
     int s_start = 0;
     int s_end = filter_data.size() -1;

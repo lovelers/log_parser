@@ -272,7 +272,7 @@ bool table_controller::isFilterMatched(const log_info_per_line_t &str) {
      **/
     if (!m_log_filter.tid.isEmpty()) {
         for (int i = 0; i < m_log_filter.tid.size(); ++i) {
-            if(str.tid.indexOf(m_log_filter.tid.at(i)) != -1) {
+            if(str.tid.indexOf(m_log_filter.tid.at(i), 0, Qt::CaseInsensitive) != -1) {
                 break;
             }
             if (i == m_log_filter.tid.size() -1) return false;
@@ -286,7 +286,7 @@ bool table_controller::isFilterMatched(const log_info_per_line_t &str) {
      **/
     if (!m_log_filter.pid.isEmpty()) {
         for (int i = 0; i < m_log_filter.pid.size(); ++i) {
-            if(str.pid.indexOf(m_log_filter.pid.at(i)) != -1) {
+            if(str.pid.indexOf(m_log_filter.pid.at(i), 0, Qt::CaseInsensitive) != -1) {
                 break;
             }
             if (i == m_log_filter.pid.size() -1) return false;
@@ -300,7 +300,7 @@ bool table_controller::isFilterMatched(const log_info_per_line_t &str) {
      **/
     if (!m_log_filter.tag.isEmpty()) {
         for (int i = 0; i < m_log_filter.tag.size(); ++i) {
-            if(str.tag.indexOf(m_log_filter.tag.at(i)) != -1) {
+            if(str.tag.indexOf(m_log_filter.tag.at(i), 0, Qt::CaseInsensitive) != -1) {
                 break;
             }
             if (i == m_log_filter.tag.size() -1) return false;
@@ -314,7 +314,7 @@ bool table_controller::isFilterMatched(const log_info_per_line_t &str) {
      **/
     if (!m_log_filter.msg.isEmpty()) {
         for (int i = 0; i < m_log_filter.msg.size(); ++i) {
-            if (str.msg.indexOf(m_log_filter.msg.at(i)) != -1)
+            if (str.msg.indexOf(m_log_filter.msg.at(i), 0, Qt::CaseInsensitive) != -1)
                 return true;
         }
         return false;
@@ -344,6 +344,12 @@ void table_controller::processLogOnline(QString str, int line_count) {
     if (str.size() < 50)
         str.resize(50);
     log_info_per_line_t vec = log_config::processPerLine(str);
+
+    if (line_count < m_model->getLogDataLastLine())
+    {
+        m_model->clearData();
+    }
+
     vec.line = line_count;
 
     m_model->appendLogData(vec);
