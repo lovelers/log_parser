@@ -106,9 +106,7 @@ void adb_online::processFinished(int exitCode , QProcess::ExitStatus exitStatus)
                 <<", exitStatus = " << exitStatus;
     if (m_curType != ANDROID_STOP) {
         qDebug() << "finished unexpected! run process again";
-        //adbKillServer();
-        //adbStartServer();
-        android_run();
+        emit stopUnexpected();
     }
 }
 
@@ -142,7 +140,6 @@ adb_online::~adb_online() {
 }
 
 // log_load_thread
-
 QStringList adb_online::checkDevices() {
     //QProcess m_device_check;
     QProcess process;
@@ -244,7 +241,8 @@ void adb_online::outputDirManagement() {
     QFileInfoList fileInfoList = logDir.entryInfoList(QDir::Files, QDir::Time);
     const int maxBytes = 1000 * 1000 * 1000; // 1G
     int bytes = 0;
-    foreach(QFileInfo fileInfo, fileInfoList) {
+    foreach(QFileInfo fileInfo, fileInfoList)
+    {
         bytes += fileInfo.size();
         if (0 == fileInfo.size() || bytes > maxBytes) {
             QFile::setPermissions(fileInfo.absoluteFilePath(), QFileDevice::WriteOwner);

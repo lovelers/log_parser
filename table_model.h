@@ -19,10 +19,10 @@ public:
     void setLogData(const log_info_t &data);
     void appendLogData(const log_info_per_line_t &data);
     void clearData();
-    log_info_t * getLogDataPtr();
+    const log_info_t * getLogDataPtr();
     void setLogFilterData(const log_info_t &data);
     void appendLogFilterData(const log_info_per_line_t &data);
-    log_info_t *getLogFilterDataPtr();
+    const log_info_t *getLogFilterDataPtr();
     QModelIndex getModexIndex(int line, int col);
     int getLogDataLastLine() const;
 private:

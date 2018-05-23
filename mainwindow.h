@@ -33,7 +33,7 @@ private:
     //af_debugger *m_afDebugger;
     QString m_window_title;
 
-    QTimer check_adb_device_tiemr;
+    QTimer check_adb_device_timer;
     QStringList parseLogFilterText(QString text);
 
     QFontDialog m_font_dialog;
@@ -88,10 +88,11 @@ public Q_SLOTS:
     void android_clear();
 
     void logOnlinePath(QString path);
+    void logStopUnexpected();
 
     void table_view_double_clicked(QModelIndex index);
 
-    void recieveLineNumber(int);
+    void selectLine(int);
 
     void logCopy();
 };

@@ -33,17 +33,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QObject::connect(m_adb, SIGNAL(logOnlinePath(QString)),
                      this, SLOT(logOnlinePath(QString)));
+
+    QObject::connect(m_adb, SIGNAL(stopUnexpected()),
+                     this, SLOT(logStopUnexpected()));
     m_line_dialog->setModal(true);
     QObject::connect(m_line_dialog, SIGNAL(sendLineNumber(int)),
-                     this, SLOT(recieveLineNumber(int)));
+                     this, SLOT(selectLine(int)));
     ui->android_stop_btn->setEnabled(false);
     ui->msg_combobox->setCompleter(0);
     m_window_title.append("log parser");
     this->setWindowTitle(m_window_title);
 
-    QObject::connect(&check_adb_device_tiemr, SIGNAL(timeout()),
+    QObject::connect(&check_adb_device_timer, SIGNAL(timeout()),
                      this, SLOT(android_devices_select()));
-    check_adb_device_tiemr.start(1000);
+    check_adb_device_timer.start(1000);
     QWidget::showMaximized();
 
     m_log_open_path = QDir::currentPath() + LOG_OUTPUT_DIR;
@@ -56,7 +59,7 @@ MainWindow::~MainWindow()
     if (m_line_dialog) delete m_line_dialog;
     if (m_persist_settings) delete m_persist_settings;
     if (m_snapshot) delete m_snapshot;
-    check_adb_device_tiemr.stop();
+    check_adb_device_timer.stop();
     if (m_tablectrl) {
         m_tablectrl->setAdbCmd(ANDROID_STOP);
         delete m_tablectrl;
@@ -288,9 +291,11 @@ void MainWindow::android_devices_select() {
             for (int i = 0; i < list.size(); i++) {
                 ui->android_devices_cb->insertItem(i, list.at(i));
             }
+            //check_adb_device_timer.stop();
         }
         pre_list = list;
     }
+
 }
 
 void MainWindow::android_run() {
@@ -305,7 +310,7 @@ void MainWindow::android_run() {
     this->ui->android_stop_btn->setEnabled(true);
     this->ui->android_clear_btn->setEnabled(true);
 
-    //check_adb_device_tiemr.start(1000);
+    //check_adb_device_timer.start(1000);
 }
 
 void MainWindow::android_pause_resume() {
@@ -345,7 +350,7 @@ void MainWindow::android_stop() {
     this->ui->android_stop_btn->setEnabled(false);
     this->ui->android_clear_btn->setEnabled(false);
 
-    //check_adb_device_tiemr.stop();
+    //check_adb_device_timer.stop();
 }
 
 void MainWindow::android_clear() {
@@ -362,13 +367,18 @@ void MainWindow::logOnlinePath(QString path) {
     m_tablectrl->setOnLineLogFile(path);
 }
 
+void MainWindow::logStopUnexpected()
+{
+    android_devices_select();
+    android_run();
+}
 void MainWindow::table_view_double_clicked(QModelIndex index) {
     qDebug() << index.column();
 }
 
-void MainWindow::recieveLineNumber(int line) {
+void MainWindow::selectLine(int line) {
     if (m_tablectrl) {
-        m_tablectrl->recieveLineNumber(line);
+        m_tablectrl->selectLine(line);
     }
 }
 

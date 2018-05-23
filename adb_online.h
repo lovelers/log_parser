@@ -39,6 +39,7 @@ public slots:
 
 signals:
     void logOnlinePath(QString path);
+    void stopUnexpected();
 public:
     static QStringList checkDevices();
     static bool adbRootRemount();

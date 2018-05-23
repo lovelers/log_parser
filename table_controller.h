@@ -97,7 +97,7 @@ public:
     void showAllLogs();
     void setAdbCmd(ANDROID_ONLINE_CMD cmd);
     void setFont(const QFont &font);
-    void recieveLineNumber(int line);
+    void selectLine(int line);
     void closeWindow();
 
 

@@ -225,9 +225,25 @@ void table_controller::setFilter(const log_filter_t& filter) {
     }
 }
 void table_controller::processFilterPrivate() {
+
+    const log_info_t *logFilterData = m_model->getLogFilterDataPtr();
+    QModelIndexList selectIndexs = m_view->selectionModel()->selection().indexes();
+    bool hasSelection = false;
+    int  logFilterDataLine = -1;
+    if (false == selectIndexs.isEmpty())
+    {
+        hasSelection = true;
+        logFilterDataLine = logFilterData->at(selectIndexs.at(0).row()).line;
+        qDebug() << "select line: " << logFilterDataLine;
+    }
+    else
+    {
+        qDebug() << "no line selection" << endl;
+    }
+
+    const log_info_t *logData = m_model->getLogDataPtr();
     m_log_filter_lock.lock();
     qDebug() << "start process Filter Private" << endl;
-    log_info_t *logData = m_model->getLogDataPtr();
     m_delegate->updateMsgFilter(m_log_filter.msg);
     if (logData->isEmpty())
     {
@@ -246,18 +262,22 @@ void table_controller::processFilterPrivate() {
         if (isLevelVisible(vec.level)
                 && isFilterMatched(vec)) {
             filterData.append(vec);
-        } else {
-            //m_view->setRowHidden(i, true);
         }
     }
     m_model->setLogFilterData(filterData);
 
     qDebug() << "filter time diff " << stime.elapsed();
     m_log_filter_lock.unlock();
+
+    // if we have line selected, after filter done, we need still selected the specific line.
+    if (hasSelection) {
+        selectLine(logFilterDataLine);
+    }
 }
 
 
-bool table_controller::isFilterMatched(const log_info_per_line_t &str) {
+bool table_controller::isFilterMatched(const log_info_per_line_t &str)
+{
     if (m_log_filter.tid.isEmpty() &&
             m_log_filter.pid.isEmpty()&&
             m_log_filter.tag.isEmpty()&&
@@ -323,7 +343,7 @@ bool table_controller::isFilterMatched(const log_info_per_line_t &str) {
 }
 
 void table_controller::showAllLogs() {
-    log_info_t *logData = m_model->getLogDataPtr();
+    const log_info_t *logData = m_model->getLogDataPtr();
     log_info_t filterData;
     int row = logData->size();
     for (int i = 0; i < row; i++) {
@@ -413,7 +433,7 @@ void table_controller::setFont(const QFont &font) {
 }
 
 
-void table_controller::recieveLineNumber(int line) {
+void table_controller::selectLine(int line) {
     if (m_view && m_model) {
         qDebug() << __func__ << "goto line:" << line;
         QModelIndex index = m_model->getModexIndex(line, 0);
@@ -431,8 +451,8 @@ void table_controller::tableCustomMenuRequest(QPoint point) {
 
 void table_controller::logExpand() {
     QItemSelectionModel *selection= m_view->selectionModel();
-    log_info_t* logFilterDataPtr = m_model->getLogFilterDataPtr();
-    log_info_t* logDataPtr = m_model->getLogDataPtr();
+    const log_info_t* logFilterDataPtr = m_model->getLogFilterDataPtr();
+    const log_info_t* logDataPtr = m_model->getLogDataPtr();
 
     if (selection->hasSelection()
             && NULL != logFilterDataPtr
@@ -488,8 +508,8 @@ void table_controller::logExpand() {
 void table_controller::logExpandByType(TABLE_COL_TYPE type)
 {
     QItemSelectionModel *selection= m_view->selectionModel();
-    log_info_t * logFilterDataPtr = m_model->getLogFilterDataPtr();
-    log_info_t * logDataPtr = m_model->getLogDataPtr();
+    const log_info_t * logFilterDataPtr = m_model->getLogFilterDataPtr();
+    const log_info_t * logDataPtr = m_model->getLogDataPtr();
     int maxLine = logDataPtr->size();
     int line = 0;
     QString match;
@@ -672,7 +692,7 @@ void table_controller::logCopy() {
     if (selection->hasSelection()) {
         qDebug() << "hasSelecton";
         QString text;
-        log_info_t * logDataPtr = m_model->getLogFilterDataPtr();
+        const log_info_t * logDataPtr = m_model->getLogFilterDataPtr();
         int start = selection->selection().first().topLeft().row();
         int end = selection->selection().first().bottomRight().row();
         qDebug() << "start = " << start;

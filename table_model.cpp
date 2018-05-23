@@ -10,6 +10,7 @@ table_model::table_model(QObject *parent):
 
 int table_model::rowCount(const QModelIndex &parent) const {
     //if (filter_data.size() < 100) return 100;
+    (void)parent;
     return filter_data.size();
 }
 
@@ -95,11 +96,11 @@ void table_model::clearData() {
     this->endResetModel();
 }
 
-log_info_t * table_model::getLogDataPtr() {
+const log_info_t * table_model::getLogDataPtr() {
     return &log_data;
 }
 
-log_info_t * table_model::getLogFilterDataPtr() {
+const log_info_t * table_model::getLogFilterDataPtr() {
     return &filter_data;
 }
 
@@ -145,12 +146,14 @@ QModelIndex table_model::getModexIndex(int line, int col) {
         if (s_start == s_end ||
                 s_start == s_mid ||
                 s_end == s_mid) {
-            qDebug() << "can't find the target line";
+            //qDebug() << "can't find the target line";
             break;
         }
+#if 0
         qDebug() << "s_start = " << s_start
                  << "s_end  = " << s_end
                  << "s_mid = " << s_mid;
+#endif
     }
     qDebug() << "find the Index:" << s_mid+1;
     return this->index(s_mid, col);
