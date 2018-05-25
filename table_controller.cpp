@@ -31,12 +31,10 @@ table_controller::table_controller(QTableView *view) {
                      this, SLOT(tableCustomMenuRequest(QPoint)));
 
     if (m_logConfig->isConfigValid()) {
-        const QVector<QString> &keys = m_logConfig->getKeys();
-        const QVector<qint16> &widths = m_logConfig->getWidths();
-
-        int size = keys.size();
-        for (int i = 0; i < size; ++i) {
-            m_view->setColumnWidth(i, widths.at(i));
+        const QVector<log_item_t> &items = m_logConfig->GetLogItems();
+        for (int i = 0; i < items.size(); ++i)
+        {
+            m_view->setColumnWidth(i, items.at(i).width);
         }
     }
     m_scroll_timer = new QTimer(this);
@@ -464,16 +462,17 @@ void table_controller::logExpand() {
         qDebug() << "start = " << start;
         qDebug() << "end = " << end;
 
-        int logStart = logFilterDataPtr->at(start).line;
-        int logEnd = logFilterDataPtr->at(end).line;
-        int select = 0;
+        int logStart                = logFilterDataPtr->at(start).line;
+        int logEnd                  = logFilterDataPtr->at(end).line;
+        int select                  = 0;
+        int logExpandNum            = m_logConfig->GetLogExpandNum();
 
         if (logStart == logEnd)
         {
             //Do Nothing.
-            select = MIN(logStart, 200);
-            logStart = MAX(0, logStart - 200);
-            logEnd = MIN(logDataPtr->last().line, logEnd + 200);
+            select = MIN(logStart, logExpandNum);
+            logStart = MAX(0, logStart - logExpandNum);
+            logEnd = MIN(logDataPtr->last().line, logEnd + logExpandNum);
         }
 
         QString log;

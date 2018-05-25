@@ -972,7 +972,7 @@
     <string>Goto Line</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+L</string>
+    <string>Ctrl+G</string>
    </property>
   </action>
   <action name="screen_shot">

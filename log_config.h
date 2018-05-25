@@ -30,9 +30,10 @@ typedef struct {
     QString name;
     QString value;
     QString value_range;
-} Persist;
+} persist_t;
 
 static log_config *g_logConfig = NULL;
+
 typedef struct {
     int line;
     QString date;
@@ -55,6 +56,19 @@ typedef enum {
     LOGCAT_DUMP_TO_FILE
 } log_type;
 
+typedef struct {
+    QString key;
+    int     width;
+} log_item_t;
+
+struct config_t {
+    bool                    isValid;
+    QVector<QString>        logCmds;
+    QVector<log_item_t>     logItems;
+    QVector<persist_t>      persists;
+    int                     logExpandNum;
+};
+
 typedef QVector<log_info_per_line_t> log_info_t;
 class log_config
 {
@@ -67,18 +81,32 @@ public:
         return g_logConfig;
     }
 
-    bool isConfigValid() const { return m_isValid; }
-    const QVector<QString> &getKeys() { return m_keys;}
-    const QVector<qint16> &getWidths() { return m_widths;}
+    bool isConfigValid() const
+    {
+        return m_config.isValid;
+    }
+
+    const QVector<log_item_t> &GetLogItems()
+    {
+        return m_config.logItems;
+    }
+
+    const QVector<persist_t>& GetPersist()
+    {
+        return m_config.persists;
+    }
+
+    int GetLogExpandNum()
+    {
+        return m_config.logExpandNum;
+    }
+
     static log_info_per_line_t processPerLine(const QString &str, log_type type = LOGCAT_THREADTIME);
     static log_type checkLogType(const QString &str);
-    const QVector<Persist>& getPersist() { return m_persist;}
 private:
-    QVector<QString> m_keys;
-    QVector<qint16> m_widths;
-    bool m_isValid;
+
     log_config();
-    QVector<Persist> m_persist;
+    config_t m_config;
 };
 
 #endif // LOG_CONFIG_H

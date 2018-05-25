@@ -12,8 +12,8 @@ persist_settings::persist_settings(QWidget *parent) :
     ui(new Ui::persist_settings)
 {
     ui->setupUi(this);
-    const QVector<Persist> & persist =
-            log_config::getInstance()->getPersist();
+    const QVector<persist_t> & persist =
+            log_config::getInstance()->GetPersist();
     QList<persist_model_data_t> persist_model_data;
     for (int i = 0; i < persist.size(); ++i) {
         persist_model_data_t s_data;
@@ -140,10 +140,12 @@ const QList<persist_model_data_t> & persist_model::getPersistData() {
 }
 
 int persist_model::rowCount(const QModelIndex &parent) const {
+    (void) parent;
     return m_data.size();
 }
 
 int persist_model::columnCount(const QModelIndex &parent) const {
+    (void) parent;
     return MODEL_DATA_INDEX_MAX;
 }
 

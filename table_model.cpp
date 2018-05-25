@@ -15,14 +15,14 @@ int table_model::rowCount(const QModelIndex &parent) const {
 }
 
 int table_model::columnCount(const QModelIndex &parent) const {
-    return m_log_config->getKeys().size();
+    return m_log_config->GetLogItems().size();
 }
 
 QVariant table_model::headerData(int section, Qt::Orientation orientation, int role) const {
     if (role != Qt::DisplayRole) return QVariant();
 
     if (orientation == Qt::Horizontal) {
-        return m_log_config->getKeys().at(section);
+        return m_log_config->GetLogItems().at(section).key;
     }
     if (orientation == Qt::Vertical) {
         if (filter_data.size() < section)

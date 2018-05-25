@@ -11,11 +11,10 @@
 
 log_config::log_config()
 {
-
     //QString log_files = QDir::currentPath() + LOG_OUTPUT_DIR;
     QFile file;
     file.setFileName(LOG_PARSER_JSON);
-    m_isValid = false;
+    m_config.isValid = false;
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QString jval = file.readAll();
         qDebug() << "file data:" << jval << endl;
@@ -23,33 +22,47 @@ log_config::log_config()
         QJsonDocument jdoc= QJsonDocument::fromJson(jval.toUtf8());
         qDebug() << "print empty: " << jdoc.isNull() << endl;
         QJsonObject jobj = jdoc.object();
+
+        if (jdoc.isNull())
+        {
+            m_config.isValid = false;
+            return;
+        }
+        else
+        {
+            m_config.isValid = true;
+        }
+
+        // configure the log item
         QJsonArray jarr = jobj["LogItem"].toArray();
         foreach(const QJsonValue &value, jarr) {
             QJsonObject obj = value.toObject();
-            m_keys.append(obj["key"].toString());
-            m_widths.append(obj["width"].toInt());
+            log_item_t item;
+            item.key = obj["key"].toString();
+            item.width = obj["width"].toInt();
+            m_config.logItems.append(item);
+            //m_keys.append(obj["key"].toString());
+            //m_widths.append(obj["width"].toInt());
             qDebug() <<"print " << obj["key"].toString() << endl;
             qDebug() << "print" << obj["width"].toInt() << endl;
         }
 
+        // configure the persist;
         jarr = jobj["Persist"].toArray();
         foreach(const QJsonValue &value, jarr) {
             QJsonObject obj = value.toObject();
-            Persist persist;
+            persist_t persist;
             persist.name.append(obj["key"].toString());
             persist.value.append(obj["value"].toString());
             persist.value_range.append(obj["range"].toString());
-            m_persist.append(persist);
+            m_config.persists.append(persist);
             qDebug() << "name:" << persist.name
                      << "value:" << persist.value
                      << "range:" << persist.value_range;
         }
 
-        if (m_keys.size() > 0 && m_persist.size() >0) {
-            m_isValid = true;
-        } else {
-            m_isValid = false;
-        }
+        // configure the log expand num
+        m_config.logExpandNum = jobj["logExpand"].toInt();
     }
 }
 
