@@ -392,10 +392,11 @@ void MainWindow::logCopy()
 
 void MainWindow::dropEvent(QDropEvent *event) {
     const QMimeData *data = event->mimeData();
+    qDebug() << "dropEvent" <<endl;
     if (data->hasUrls()) {
         if (data->urls().at(0).isLocalFile()) {
             android_stop();
-            QString filename = data->urls().at(0).toLocalFile();
+            QString filename = data->urls().first().toLocalFile();
             this->setWindowTitle(m_window_title + ":" + filename);
             m_tablectrl->processLogFromFile(filename);
         }
@@ -403,10 +404,12 @@ void MainWindow::dropEvent(QDropEvent *event) {
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
+        qDebug() << "dragEnterEvent" <<endl;
     event->accept();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
+           qDebug() << "keyPressEvent" <<endl;
     QWidget::keyPressEvent(event);
 }
 

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1280</width>
-    <height>720</height>
+    <width>1920</width>
+    <height>1080</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -21,8 +21,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>1280</width>
-    <height>720</height>
+    <width>1920</width>
+    <height>1080</height>
    </size>
   </property>
   <property name="acceptDrops">
@@ -55,7 +55,7 @@
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
     <item row="0" column="0">
-     <widget class="QSplitter" name="splitter_4">
+     <widget class="QSplitter" name="splitter">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -68,14 +68,14 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>550</width>
-         <height>85</height>
+         <width>650</width>
+         <height>40</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>10000</width>
-         <height>85</height>
+         <width>650</width>
+         <height>200</height>
         </size>
        </property>
        <property name="acceptDrops">
@@ -88,213 +88,204 @@
         <string>Log_Filter</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
        </property>
        <layout class="QGridLayout" name="gridLayout_5">
-        <item row="0" column="0">
-         <widget class="QSplitter" name="splitter_5">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+        <item row="1" column="5">
+         <widget class="QLineEdit" name="tid_edit">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>20</height>
+           </size>
           </property>
-          <widget class="QLabel" name="msg_label">
-           <property name="minimumSize">
-            <size>
-             <width>22</width>
-             <height>16</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>22</width>
-             <height>16</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Msg:</string>
-           </property>
-          </widget>
-          <widget class="QComboBox" name="msg_combobox">
-           <property name="minimumSize">
-            <size>
-             <width>500</width>
-             <height>20</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>1200</width>
-             <height>20</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <stylestrategy>PreferDefault</stylestrategy>
-            </font>
-           </property>
-           <property name="acceptDrops">
-            <bool>true</bool>
-           </property>
-           <property name="inputMethodHints">
-            <set>Qt::ImhNoAutoUppercase|Qt::ImhNoPredictiveText</set>
-           </property>
-           <property name="editable">
-            <bool>true</bool>
-           </property>
-           <property name="insertPolicy">
-            <enum>QComboBox::InsertAtTop</enum>
-           </property>
-           <property name="sizeAdjustPolicy">
-            <enum>QComboBox::AdjustToContents</enum>
-           </property>
-           <property name="duplicatesEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="modelColumn">
-            <number>0</number>
-           </property>
-          </widget>
+          <property name="maximumSize">
+           <size>
+            <width>300</width>
+            <height>32</height>
+           </size>
+          </property>
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QSplitter" name="splitter_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+         <widget class="QLabel" name="tag_label">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
           </property>
-          <widget class="QSplitter" name="splitter">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <widget class="QLabel" name="tag_label">
-            <property name="minimumSize">
-             <size>
-              <width>22</width>
-              <height>16</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>22</width>
-              <height>16</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Tag:</string>
-            </property>
-           </widget>
-           <widget class="QLineEdit" name="tag_edit">
-            <property name="minimumSize">
-             <size>
-              <width>200</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>400</width>
-              <height>20</height>
-             </size>
-            </property>
-           </widget>
-           <widget class="QLabel" name="pid_label">
-            <property name="minimumSize">
-             <size>
-              <width>20</width>
-              <height>16</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>20</width>
-              <height>16</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Pid:</string>
-            </property>
-           </widget>
-           <widget class="QLineEdit" name="pid_edit">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>200</width>
-              <height>16</height>
-             </size>
-            </property>
-           </widget>
-           <widget class="QLabel" name="tid_label">
-            <property name="minimumSize">
-             <size>
-              <width>20</width>
-              <height>16</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>20</width>
-              <height>16</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Tid:</string>
-            </property>
-           </widget>
-           <widget class="QLineEdit" name="tid_edit">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>200</width>
-              <height>20</height>
-             </size>
-            </property>
-           </widget>
-          </widget>
-          <widget class="QSplitter" name="splitter_3">
-           <property name="layoutDirection">
-            <enum>Qt::RightToLeft</enum>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <widget class="QPushButton" name="clear_btn">
-            <property name="minimumSize">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Clear</string>
-            </property>
-            <property name="checkable">
-             <bool>false</bool>
-            </property>
-            <property name="autoDefault">
-             <bool>false</bool>
-            </property>
-            <property name="default">
-             <bool>false</bool>
-            </property>
-            <property name="flat">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </widget>
+          <property name="maximumSize">
+           <size>
+            <width>44</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Tag:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QLabel" name="tid_label">
+          <property name="minimumSize">
+           <size>
+            <width>30</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Tid:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" colspan="6">
+         <widget class="QComboBox" name="msg_combobox">
+          <property name="minimumSize">
+           <size>
+            <width>450</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>1000000</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <stylestrategy>PreferDefault</stylestrategy>
+           </font>
+          </property>
+          <property name="acceptDrops">
+           <bool>true</bool>
+          </property>
+          <property name="inputMethodHints">
+           <set>Qt::ImhNoAutoUppercase|Qt::ImhNoPredictiveText</set>
+          </property>
+          <property name="editable">
+           <bool>true</bool>
+          </property>
+          <property name="insertPolicy">
+           <enum>QComboBox::InsertAtTop</enum>
+          </property>
+          <property name="sizeAdjustPolicy">
+           <enum>QComboBox::AdjustToContents</enum>
+          </property>
+          <property name="duplicatesEnabled">
+           <bool>true</bool>
+          </property>
+          <property name="modelColumn">
+           <number>0</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QLabel" name="pid_label">
+          <property name="minimumSize">
+           <size>
+            <width>30</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Pid:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="msg_label">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>44</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Msg:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="6">
+         <widget class="QPushButton" name="clear_btn">
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>80</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Clear</string>
+          </property>
+          <property name="checkable">
+           <bool>false</bool>
+          </property>
+          <property name="autoDefault">
+           <bool>false</bool>
+          </property>
+          <property name="default">
+           <bool>false</bool>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="tag_edit">
+          <property name="minimumSize">
+           <size>
+            <width>200</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>32</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QLineEdit" name="pid_edit">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>300</width>
+            <height>32</height>
+           </size>
+          </property>
          </widget>
         </item>
        </layout>
@@ -309,17 +300,20 @@
        <property name="minimumSize">
         <size>
          <width>200</width>
-         <height>85</height>
+         <height>40</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>85</height>
+         <width>300</width>
+         <height>200</height>
         </size>
        </property>
        <property name="title">
         <string>Log Columns</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
@@ -339,7 +333,7 @@
           <property name="maximumSize">
            <size>
             <width>80</width>
-            <height>20</height>
+            <height>32</height>
            </size>
           </property>
           <property name="autoFillBackground">
@@ -370,7 +364,7 @@
           <property name="maximumSize">
            <size>
             <width>80</width>
-            <height>20</height>
+            <height>32</height>
            </size>
           </property>
           <property name="text">
@@ -398,7 +392,7 @@
           <property name="maximumSize">
            <size>
             <width>80</width>
-            <height>20</height>
+            <height>32</height>
            </size>
           </property>
           <property name="text">
@@ -426,39 +420,11 @@
           <property name="maximumSize">
            <size>
             <width>80</width>
-            <height>20</height>
+            <height>32</height>
            </size>
           </property>
           <property name="text">
            <string>Tid</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QCheckBox" name="tag_cb">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>60</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>80</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Tag</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -482,11 +448,39 @@
           <property name="maximumSize">
            <size>
             <width>80</width>
-            <height>20</height>
+            <height>32</height>
            </size>
           </property>
           <property name="text">
            <string>Level</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="tag_cb">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>80</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Tag</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -505,47 +499,22 @@
        <property name="minimumSize">
         <size>
          <width>200</width>
-         <height>85</height>
+         <height>40</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>85</height>
+         <width>300</width>
+         <height>200</height>
         </size>
        </property>
        <property name="title">
         <string>Log Levels</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+       </property>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="verbose_cb">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>60</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>60</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Verbose</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="1">
          <widget class="QCheckBox" name="debug_cb">
           <property name="sizePolicy">
@@ -562,8 +531,8 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>60</width>
-            <height>20</height>
+            <width>100</width>
+            <height>32</height>
            </size>
           </property>
           <property name="text">
@@ -574,8 +543,8 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="2">
-         <widget class="QCheckBox" name="info_cb">
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="verbose_cb">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -590,40 +559,12 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>60</width>
-            <height>20</height>
+            <width>100</width>
+            <height>32</height>
            </size>
           </property>
           <property name="text">
-           <string>Info</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="warn_cb">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>60</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>60</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Warn</string>
+           <string>Verbose</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -646,8 +587,8 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>60</width>
-            <height>20</height>
+            <width>100</width>
+            <height>32</height>
            </size>
           </property>
           <property name="text">
@@ -674,12 +615,68 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>60</width>
-            <height>20</height>
+            <width>100</width>
+            <height>32</height>
            </size>
           </property>
           <property name="text">
            <string>Fatal</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="warn_cb">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Warn</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QCheckBox" name="info_cb">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Info</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -692,38 +689,38 @@
        <property name="minimumSize">
         <size>
          <width>220</width>
-         <height>85</height>
+         <height>40</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>220</width>
-         <height>85</height>
+         <width>350</width>
+         <height>200</height>
         </size>
        </property>
        <property name="title">
         <string>Android Devices</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+       </property>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="1" column="1">
-         <widget class="QPushButton" name="android_pause_resume_btn">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
+        <item row="0" column="0" colspan="4">
+         <widget class="QComboBox" name="android_devices_cb">
           <property name="minimumSize">
            <size>
-            <width>50</width>
+            <width>0</width>
             <height>20</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>50</width>
-            <height>20</height>
+            <width>16777215</width>
+            <height>32</height>
            </size>
           </property>
-          <property name="text">
-           <string>Pause</string>
+          <property name="editable">
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -740,12 +737,53 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>50</width>
-            <height>20</height>
+            <width>60</width>
+            <height>32</height>
            </size>
           </property>
           <property name="text">
            <string>Stop</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="android_pause_resume_btn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>50</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Pause</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="android_run_btn">
+          <property name="minimumSize">
+           <size>
+            <width>50</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>60</width>
+            <height>32</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Run</string>
           </property>
          </widget>
         </item>
@@ -762,38 +800,12 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>50</width>
-            <height>20</height>
+            <width>60</width>
+            <height>32</height>
            </size>
           </property>
           <property name="text">
            <string>Clear</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QPushButton" name="android_run_btn">
-          <property name="minimumSize">
-           <size>
-            <width>50</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>50</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Run</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" colspan="4">
-         <widget class="QComboBox" name="android_devices_cb">
-          <property name="editable">
-           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -804,7 +816,7 @@
     <item row="1" column="0">
      <widget class="QTableView" name="TableView">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
@@ -872,8 +884,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1280</width>
-     <height>20</height>
+     <width>1920</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="File">

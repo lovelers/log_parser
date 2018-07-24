@@ -42,7 +42,7 @@ private:
     persist_settings *m_persist_settings;
     screen_snapshot *m_snapshot;
     QString m_log_open_path;
-
+protected:
     void dropEvent(QDropEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
 
