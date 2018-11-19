@@ -981,10 +981,10 @@
   </action>
   <action name="goto_line">
    <property name="text">
-    <string>Goto Line</string>
+    <string>Line</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+G</string>
+    <string>Ctrl+L</string>
    </property>
   </action>
   <action name="screen_shot">

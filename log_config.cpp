@@ -7,13 +7,14 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
-
+#include <QDir>
 
 log_config::log_config()
 {
     //QString log_files = QDir::currentPath() + LOG_OUTPUT_DIR;
     QFile file;
-    file.setFileName(LOG_PARSER_JSON);
+    file.setFileName(QDir::currentPath()  + "/" + LOG_PARSER_JSON);
+    qDebug() << "check config file: "  <<file.fileName() <<endl;
     m_config.isValid = false;
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QString jval = file.readAll();
@@ -63,10 +64,16 @@ log_config::log_config()
 
         // configure the log expand num
         m_config.logExpandNum = jobj["logExpand"].toInt();
+        qDebug() << "log file parse successful" << endl;
+    }
+    else
+    {
+        qDebug() << "file open failed: " << file.fileName() << endl;
     }
 }
 
-log_info_per_line_t log_config::processPerLine(const QString &str, log_type type){
+log_info_per_line_t log_config::processPerLine(const QString &str, log_type type)
+{
     log_info_per_line_t line;
     QRegularExpression re;
     QRegularExpressionMatch match;
@@ -77,13 +84,35 @@ log_info_per_line_t log_config::processPerLine(const QString &str, log_type type
         return line;
     }
     switch (type) {
-    case LOGCAT_THREADTIME:
+        case LOGCAT_THREADTIME1:
         {
-            line.date = str.mid(0,5);
-            line.time = str.mid(6,12);
-            line.pid = str.mid(19,5);
-            line.tid = str.mid(25,5);
-            line.level = str.mid(31,1);
+            line.date   = str.mid(0, 5);
+            line.time   = str.mid(6,15);
+            line.pid    = str.mid(22, 5);
+            line.tid    = str.mid(28, 5);
+            line.level  = str.mid(34, 1);
+
+            if (str.at(36) == '[')
+            {
+                line.msg = str.mid(36);
+            }
+            else
+            {
+                delimiter = str.indexOf(QChar(':'), 36);
+                if (delimiter != -1) {
+                    line.tag = str.mid(36, delimiter - 36);
+                    line.msg = str.mid(delimiter+1);
+                }
+            }
+        }
+        break;
+        case LOGCAT_THREADTIME:
+        {
+            line.date   = str.mid(0,5);
+            line.time   = str.mid(6,12);
+            line.pid    = str.mid(19,5);
+            line.tid    = str.mid(25,5);
+            line.level  = str.mid(31,1);
             delimiter = str.indexOf(QChar(':'), 33);
             if (delimiter != -1) {
                 line.tag = str.mid(33, delimiter - 33);
@@ -91,36 +120,41 @@ log_info_per_line_t log_config::processPerLine(const QString &str, log_type type
             }
         }
         break;
-    case LOGCAT_TIME:
-        line.date = str.mid(0, 5);
-        line.time = str.mid(6, 12);
-        line.level = str.mid(19, 1);
-        delimiter = str.indexOf(QChar('('), 21);
-        delimiter1 = str.indexOf(QString("):"), 21);
-        if (delimiter != -1 && delimiter1 != -1 && delimiter < delimiter1) {
-            line.msg = str.mid(delimiter1+1);
-            line.tag = str.mid(21, delimiter-21);
-            line.pid = str.mid(delimiter+1, delimiter1 - delimiter-1);
-        } else {
-            line.msg = str.mid(21);
+        case LOGCAT_TIME:
+        {
+            line.date   = str.mid(0, 5);
+            line.time   = str.mid(6, 12);
+            line.level  = str.mid(19, 1);
+            delimiter   = str.indexOf(QChar('('), 21);
+            delimiter1  = str.indexOf(QString("):"), 21);
+            if (delimiter != -1 && delimiter1 != -1 && delimiter < delimiter1) {
+                line.msg = str.mid(delimiter1+1);
+                line.tag = str.mid(21, delimiter-21);
+                line.pid = str.mid(delimiter+1, delimiter1 - delimiter-1);
+            } else {
+                line.msg = str.mid(21);
+            }
         }
         break;
-
-    case LOGCAT:
-        line.level = str.mid(0, 1);
-        delimiter = str.indexOf(QChar('('), 2);
-        delimiter1 = str.indexOf(QString("):"), 2);
-        if (delimiter != -1 && delimiter1 != -1 && delimiter < delimiter1) {
-            line.tag = str.mid(2, delimiter -2);
-            line.pid = str.mid(delimiter+1, delimiter1 - delimiter -1);
-            line.msg = str.mid(delimiter1+1);
-        } else {
+        case LOGCAT:
+        {
+            line.level  = str.mid(0, 1);
+            delimiter   = str.indexOf(QChar('('), 2);
+            delimiter1  = str.indexOf(QString("):"), 2);
+            if (delimiter != -1 && delimiter1 != -1 && delimiter < delimiter1) {
+                line.tag = str.mid(2, delimiter -2);
+                line.pid = str.mid(delimiter+1, delimiter1 - delimiter -1);
+                line.msg = str.mid(delimiter1+1);
+            } else {
+                line.msg = str;
+            }
+        }
+        break;
+        default:
+        {
             line.msg = str;
+            break;
         }
-        break;
-    default:
-        line.msg = str;
-        break;
     }
 
     return line;
@@ -190,7 +224,26 @@ log_type log_config::checkLogType(const QString &str) {
         }
     }
 
-    //
+    // still need check for new format:"11-08 22:47:41.793671 13159 13218 E CAMX    :"
+    level   = str.mid(34, 1);
+    pid     = str.mid(22, 5);
+    tid     = str.mid(28, 5);
+    if (!level.isEmpty() && !pid.isEmpty() && !tid.isEmpty()) {
+        isValidLevel = (level.compare("D") == 0 ||
+                level.compare("E") == 0 ||
+                level.compare("I") == 0 ||
+                level.compare("W") == 0 ||
+                level.compare("V") == 0);
+        if (isValidLevel) {
+            tid.toInt(&isValidTid, 10);
+            if (isValidTid) {
+                pid.toInt(&isValidPid, 10);
+                if (isValidPid) {
+                    return LOGCAT_THREADTIME1;
+                }
+            }
+        }
+    }
     return UNKNOWN;
 }
 

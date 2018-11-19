@@ -52,6 +52,7 @@ typedef enum {
     LOGCAT_TIME, // logcat -v time
     //LOGCAT_RATIO_TIME, //logcat -b radio -v time
     //LOGCAT_EVENTS_TIME, //logcat -b events -v time
+    LOGCAT_THREADTIME1, // new version.
     CAT_PROC_KMSG, //cat /proc/kmsg
     LOGCAT_DUMP_TO_FILE
 } log_type;

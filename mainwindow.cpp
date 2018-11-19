@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(m_adb, SIGNAL(stopUnexpected()),
                      this, SLOT(logStopUnexpected()));
     m_line_dialog->setModal(true);
+    m_line_dialog->setWindowFlags(Qt::FramelessWindowHint);
     QObject::connect(m_line_dialog, SIGNAL(sendLineNumber(int)),
                      this, SLOT(selectLine(int)));
     ui->android_stop_btn->setEnabled(false);
