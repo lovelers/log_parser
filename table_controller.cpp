@@ -453,8 +453,8 @@ void table_controller::logExpand() {
     const log_info_t* logDataPtr = m_model->getLogDataPtr();
 
     if (selection->hasSelection()
-            && NULL != logFilterDataPtr
-            && NULL != logDataPtr) {
+            && nullptr != logFilterDataPtr
+            && nullptr != logDataPtr) {
         qDebug() << "hasSelecton";
         //int maxLine = logDataPtr->size()-1;
         int start = selection->selection().first().topLeft().row();
@@ -515,8 +515,8 @@ void table_controller::logExpandByType(TABLE_COL_TYPE type)
     QString log;
     int select = 0;
     if (selection->hasSelection()
-            && NULL != logFilterDataPtr
-            && NULL != logDataPtr) {
+            && nullptr != logFilterDataPtr
+            && nullptr != logDataPtr) {
         qDebug() << "hasSelecton";
         line = selection->selection().first().topLeft().row();
         switch (type)

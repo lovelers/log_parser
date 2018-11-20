@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(m_line_dialog, SIGNAL(sendLineNumber(int)),
                      this, SLOT(selectLine(int)));
     ui->android_stop_btn->setEnabled(false);
-    ui->msg_combobox->setCompleter(0);
+    ui->msg_combobox->setCompleter(nullptr);
     m_window_title.append("log parser");
     this->setWindowTitle(m_window_title);
 
@@ -64,12 +64,12 @@ MainWindow::~MainWindow()
     if (m_tablectrl) {
         m_tablectrl->setAdbCmd(ANDROID_STOP);
         delete m_tablectrl;
-        m_tablectrl = NULL;
+        m_tablectrl = nullptr;
     }
     if (m_adb) {
         m_adb->setCmd(ANDROID_STOP);
         delete m_adb;
-        m_adb = NULL;
+        m_adb = nullptr;
     }
     delete ui;
 }
@@ -133,7 +133,7 @@ void MainWindow::version() {
 
 void MainWindow::myShow() {
     this->show();
-    if (m_tablectrl == NULL ||
+    if (m_tablectrl == nullptr ||
             m_tablectrl->checkConfigValid() == false) {
         QMessageBox::about(this, tr("check json file failed"),
                                     tr("please make sure the log cofing json file locate in the correct position and is valid"));
