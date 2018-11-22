@@ -8,7 +8,7 @@
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
 #include <QDir>
-
+#include <QString>
 log_config::log_config()
 {
     //QString log_files = QDir::currentPath() + LOG_OUTPUT_DIR;
@@ -84,6 +84,18 @@ log_info_per_line_t log_config::processPerLine(const QString &str, log_type type
         return line;
     }
     switch (type) {
+        case LOGCAT_CAMX_DUMP:
+        {
+            line.date   = str.mid(0, 2);
+            line.time   = str.mid(3, 12);
+            line.pid    = str.mid(16, 5);
+            line.tid    = str.mid(22, 5);
+            line.tag    = "CamDump";
+            line.level  = "D";
+            line.msg    = str.mid(28);
+
+        }
+        break;
         case LOGCAT_THREADTIME1:
         {
             line.date   = str.mid(0, 5);
@@ -242,6 +254,19 @@ log_type log_config::checkLogType(const QString &str) {
                     return LOGCAT_THREADTIME1;
                 }
             }
+        }
+    }
+
+    // still need check for new camx dump format:15 08:46:48.486 25816 25869 [ INFO][PPROC  ]
+    pid = str.mid(16,5);
+    tid = str.mid(22,5);
+    if (!pid.isEmpty() &&!tid.isEmpty())
+    {
+        pid.toInt(&isValidPid, 10);
+        tid.toInt(&isValidTid, 10);
+        if (isValidPid && isValidTid)
+        {
+            return LOGCAT_CAMX_DUMP;
         }
     }
     return UNKNOWN;

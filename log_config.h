@@ -54,7 +54,7 @@ typedef enum {
     //LOGCAT_EVENTS_TIME, //logcat -b events -v time
     LOGCAT_THREADTIME1, // new version.
     CAT_PROC_KMSG, //cat /proc/kmsg
-    LOGCAT_DUMP_TO_FILE
+    LOGCAT_CAMX_DUMP, // format: 15 08:46:48.486 25816 25869 [ INFO][PPROC  ]
 } log_type;
 
 typedef struct {

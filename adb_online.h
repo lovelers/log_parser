@@ -41,12 +41,13 @@ signals:
     void logOnlinePath(QString path);
     void stopUnexpected();
 public:
-    static QStringList checkDevices();
-    static bool adbRootRemount();
-    static QString adbProperity(QString key, QString value);
-    static void adbRestartCamera();
-    void adbKillServer();
-    void adbStartServer();
+    static QStringList  checkDevices();
+    static bool         adbRootRemount();
+    static QString      adbProperity(QString key, QString value);
+    static void         adbRestartCamera();
+
+    void                adbKillServer();
+    void                adbStartServer();
 };
 
 #endif // ADB_ONLINE_H

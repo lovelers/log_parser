@@ -6,6 +6,9 @@
 #include <QDate>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
+
+static QProcess sProcess;
+
 adb_online::adb_online()
 {
     m_process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
@@ -97,7 +100,7 @@ void adb_online::android_clear() {
     bool finished = process.waitForFinished(3000);
     qDebug() << "wiat for finished:" << finished;
     process.kill();
-    process.destroyed();
+    process.close();
     android_run();
 }
 
@@ -142,16 +145,16 @@ adb_online::~adb_online() {
 // log_load_thread
 QStringList adb_online::checkDevices() {
     //QProcess m_device_check;
-    QProcess process;
-    process.start("adb", QStringList() << "devices");
-    process.waitForFinished(100);//200ms;
+    sProcess.waitForStarted(100);
+    sProcess.start("adb", QStringList() << "devices");
+    sProcess.waitForFinished(10);//200ms;
     QStringList list;
     do {
-        if (!process.canReadLine())
+        if (!sProcess.canReadLine())
         {
             break;
         }
-        QString str = process.readLine();
+        QString str = sProcess.readLine();
 
         if (str.contains("List of devices"))
         {
@@ -163,19 +166,18 @@ QStringList adb_online::checkDevices() {
         }
         //qDebug() << str;
     } while (true);
-    //qDebug() << list;
-    process.kill();
-    process.waitForFinished();
-    process.destroyed();
+    qDebug() << list;
+    sProcess.kill();
+    sProcess.waitForFinished();
     return list;
 }
 
 bool adb_online::adbRootRemount() {
-    QProcess process;
-    process.start("adb", QStringList() << "root");
-    process.waitForFinished(2000);
-    QString adbroot = process.readAll();
-    process.destroyed();
+    sProcess.waitForStarted(1000);
+    sProcess.start("adb", QStringList() << "root");
+    sProcess.waitForFinished(2000);
+    QString adbroot = sProcess.readAll();
+    sProcess.waitForFinished();
 #if 0
     process.start("adb", QStringList() << "remount");
     process.waitForFinished(2000);
@@ -191,12 +193,11 @@ bool adb_online::adbRootRemount() {
 }
 
 QString adb_online::adbProperity(QString key, QString value) {
-    QProcess process;
+    sProcess.waitForStarted(1000);
     qDebug() << key << value;
-    process.start("adb" , QStringList() << "shell" << "setprop" << key << value);
-    process.waitForFinished(100);
-    QString setprop = process.readAll().simplified();
-    process.close();
+    sProcess.start("adb" , QStringList() << "shell" << "setprop" << key << value);
+    sProcess.waitForFinished(200);
+    QString setprop = sProcess.readAll().simplified();
 #if 0
     process.start("adb", QStringList() << "shell" << "getprop " << key);
     process.waitForFinished(100);
@@ -205,35 +206,33 @@ QString adb_online::adbProperity(QString key, QString value) {
 
     qDebug() << setprop << getprop << endl;
 #endif
-    process.destroyed();
+    sProcess.kill();
     return setprop;
 }
 
 void adb_online::adbRestartCamera() {
-    QProcess process;
+    sProcess.waitForStarted(1000);
     qDebug() << "restart cameraservice";
-    process.start("adb", QStringList() << "wait-for-device" << "shell" << "pkill" << "-l" << "9" << "camera");
-    process.waitForFinished(10000);
-    process.kill();
-    process.destroyed();
+    sProcess.start("adb", QStringList() << "wait-for-device" << "shell" << "pkill" << "-l" << "9" << "camera");
+    sProcess.waitForFinished(10000);
+    sProcess.kill();
+
 }
 
 void adb_online::adbKillServer() {
-    QProcess process;
+    sProcess.waitForStarted(1000);
     qDebug() << "restart server";
-    process.start("adb", QStringList() << "kill-server");
-    process.waitForFinished(1000);
-    process.kill();
-    process.destroyed();
+    sProcess.start("adb", QStringList() << "kill-server");
+    sProcess.waitForFinished(1000);
+    sProcess.kill();
 }
 
 void adb_online::adbStartServer() {
-    QProcess process;
+    sProcess.waitForStarted(1000);
     qDebug() << "start server";
-    process.start("adb", QStringList() << "start-server");
-    process.waitForFinished(2000);
-    process.kill();
-    process.destroyed();
+    sProcess.start("adb", QStringList() << "start-server");
+    sProcess.waitForFinished(2000);
+    sProcess.kill();
 }
 
 void adb_online::outputDirManagement() {

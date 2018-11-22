@@ -12,6 +12,7 @@
 #include <QMimeData>
 #include "goto_line_dialog.h"
 #include "config.h"
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -45,6 +46,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_window_title.append("log parser");
     this->setWindowTitle(m_window_title);
 
+    // Please Note, due to here android_devices_select() belong to the MainWindow Object.
+    // so, it should be NON_BLOCKED function, otherwise, it will affect the UI Performance.
     QObject::connect(&check_adb_device_timer, SIGNAL(timeout()),
                      this, SLOT(android_devices_select()));
     check_adb_device_timer.start(1000);
@@ -60,6 +63,7 @@ MainWindow::~MainWindow()
     if (m_line_dialog) delete m_line_dialog;
     if (m_persist_settings) delete m_persist_settings;
     if (m_snapshot) delete m_snapshot;
+    check_adb_device_timer.disconnect();
     check_adb_device_timer.stop();
     if (m_tablectrl) {
         m_tablectrl->setAdbCmd(ANDROID_STOP);
@@ -270,6 +274,7 @@ void MainWindow::fatal_cb_checked(bool clicked) {
 
 // android devices
 void MainWindow::android_devices_select() {
+    check_adb_device_timer.blockSignals(true);
     static QStringList pre_list;
     if (m_adb) {
         QStringList list = m_adb->checkDevices();
@@ -292,11 +297,10 @@ void MainWindow::android_devices_select() {
             for (int i = 0; i < list.size(); i++) {
                 ui->android_devices_cb->insertItem(i, list.at(i));
             }
-            //check_adb_device_timer.stop();
         }
         pre_list = list;
     }
-
+    check_adb_device_timer.blockSignals(false);
 }
 
 void MainWindow::android_run() {
