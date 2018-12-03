@@ -12,7 +12,7 @@
 #include <QMimeData>
 #include "goto_line_dialog.h"
 #include "config.h"
-
+#include "log_filter_msg_history.h"
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -43,6 +43,11 @@ MainWindow::MainWindow(QWidget *parent) :
                      this, SLOT(selectLine(int)));
     ui->android_stop_btn->setEnabled(false);
     ui->msg_combobox->setCompleter(nullptr);
+
+    QStringList msglist = LogFilterMsgHistory::getInstance()->GetValue();
+
+    ui->msg_combobox->insertItems(0, msglist);
+
     m_window_title.append("log parser");
     this->setWindowTitle(m_window_title);
 
@@ -170,6 +175,7 @@ void MainWindow::logFilterReturnPress() {
     qDebug() << "filter pid:" << filter.pid;
     qDebug() << "filter tid:" << filter.tid;
     m_tablectrl->setFilter(filter);
+
     //ui->TableView->setFocus();
 }
 
@@ -424,4 +430,15 @@ void MainWindow::closeEvent(QCloseEvent *) {
     m_persist_settings->close();
     m_font_dialog.close();
     m_line_dialog->close();
+
+    QStringList msgList;
+    for (int i = 0; i < ui->msg_combobox->count(); ++i)
+    {
+        msgList.append(ui->msg_combobox->itemText(i));
+    }
+    LogFilterMsgHistory::getInstance()->Append(msgList);
+}
+
+void MainWindow::on_msg_combobox_editTextChanged(const QString &arg1)
+{
 }

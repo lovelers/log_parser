@@ -4,6 +4,7 @@
 #define LOG_PARSER_JSON "log_config.json"
 #define AF_DEBUGGER_JSON "af_config.json"
 #define LOG_OUTPUT_DIR "log_files"
+#define LOG_FILTER_MSG_HISTORY "log_filter_msg_history.json"
 #define SHOW_MORE_LINES_THRESHOLD 200
 #define MIN(x, y) (x) > (y) ? (y) : (x)
 #define MAX(x, y) (x) > (y) ? (x) : (y)

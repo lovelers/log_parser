@@ -95,6 +95,8 @@ public Q_SLOTS:
     void selectLine(int);
 
     void logCopy();
+private slots:
+    void on_msg_combobox_editTextChanged(const QString &arg1);
 };
 
 #endif // MAINWINDOW_H

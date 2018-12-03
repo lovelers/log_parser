@@ -35,7 +35,8 @@ SOURCES += \
     persist_settings.cpp \
     table_menu.cpp \
     screen_snapshot.cpp \
-    myopenglwidget.cpp
+    myopenglwidget.cpp \
+    log_filter_msg_history.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -49,7 +50,8 @@ HEADERS += \
     persist_settings.h \
     table_menu.h \
     screen_snapshot.h \
-    myopenglwidget.h
+    myopenglwidget.h \
+    log_filter_msg_history.h
 
 FORMS += \
         mainwindow.ui \

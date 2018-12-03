@@ -75,8 +75,9 @@ class log_config
 {
 
 public:
-    static log_config* getInstance() {
-        if (g_logConfig == NULL) {
+    static log_config* getInstance()
+    {
+        if (g_logConfig == nullptr) {
             g_logConfig = new log_config();
         }
         return g_logConfig;
