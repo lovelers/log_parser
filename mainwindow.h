@@ -15,33 +15,33 @@ namespace Ui {
 class MainWindow;
 }
 
+class CheckDeviceRealtimeThread;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
 
     void myShow();
     ~MainWindow();
 
 private:
-    Ui::MainWindow *ui;
-    table_controller *m_tablectrl;
-    table_model *m_model;
-    adb_online *m_adb;
-    //af_debugger *m_afDebugger;
-    QString m_window_title;
 
-    QTimer check_adb_device_timer;
+    Ui::MainWindow*             ui;
+    QString                     mWindowTitle;
+    QString                     mLogOpenPath;
+    table_controller*           mpTableCtrl;
+    adb_online*                 mpAdbOnline;
+    QFontDialog                 mFontDialog;
+    goto_line_dialog*           mpLineDialog;
+    persist_settings*           mpPersistSettings;
+    screen_snapshot*            mpSnapshot;
+    CheckDeviceRealtimeThread*  mpCheckDevices;
+
     QStringList parseLogFilterText(QString text);
 
-    QFontDialog m_font_dialog;
-
-    goto_line_dialog *m_line_dialog;
-    persist_settings *m_persist_settings;
-    screen_snapshot *m_snapshot;
-    QString m_log_open_path;
 protected:
     void dropEvent(QDropEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
@@ -98,5 +98,50 @@ public Q_SLOTS:
 private slots:
     void on_msg_combobox_editTextChanged(const QString &arg1);
 };
+class CheckDeviceRealtimeThread : public QThread
+{
+    Q_OBJECT
+    void run()
+    {
+        if (m != nullptr)
+        {
+            m->android_devices_select();
+        }
+    }
+public:
+    CheckDeviceRealtimeThread(MainWindow *main)
+    {
+        m   = main;
+        QObject::connect(&timer, SIGNAL(timeout()), this, SLOT(Start()));
+    }
+    void EventLoop()
+    {
+        timer.start(1000);
+    }
+    void ExitEventLoop()
+    {
+        timer.stop();
 
+        this->exit();
+        int try_count = 0;
+
+        while(try_count < 100 || !this->isFinished())
+        {
+            QThread::sleep(10);
+            try_count++;
+        }
+        if (false == this->isFinished())
+        {
+            qDebug("wait finisned timeout");
+        }
+    }
+private Q_SLOTS:
+    void Start()
+    {
+        this->start();
+    }
+private:
+    MainWindow *m;
+    QTimer      timer;
+};
 #endif // MAINWINDOW_H

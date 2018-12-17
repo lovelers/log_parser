@@ -75,17 +75,17 @@ int LogFilterMsgHistory::Append(QStringList msgList)
             QString jval        = file.readAll();
             QJsonDocument jdoc  = QJsonDocument::fromJson(jval.toUtf8());
             QJsonObject jobj    = jdoc.object();
-            QJsonArray jarr     = jobj["msg"].toArray();
+            QVariantList jlist  = jobj["msg"].toArray().toVariantList();
+
             foreach(const QString &msg, msgList)
             {
-                if (jarr.size() > mMaxCount)
+                jlist.removeAll(QVariant(msg));
+                if (jlist.size() < mMaxCount)
                 {
-                    jarr.removeLast();
-
+                    jlist.append(QVariant(msg));
                 }
-                jarr.append(msg);
             }
-            jobj["msg"]         = jarr;
+            jobj["msg"]         = QJsonArray::fromVariantList(jlist);
             jdoc                = QJsonDocument(jobj);
             file.close();
 
@@ -117,7 +117,6 @@ QStringList LogFilterMsgHistory::GetValue()
             QJsonDocument jdoc  = QJsonDocument::fromJson(jval.toUtf8());
             QJsonObject jobj    = jdoc.object();
             QJsonArray jarr     = jobj["msg"].toArray();
-
             foreach(const QJsonValue &value, jarr)
             {
                 list.append(value.toString());

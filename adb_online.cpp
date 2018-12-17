@@ -144,17 +144,18 @@ adb_online::~adb_online() {
 
 // log_load_thread
 QStringList adb_online::checkDevices() {
-    //QProcess m_device_check;
-    sProcess.waitForStarted(100);
-    sProcess.start("adb", QStringList() << "devices");
-    sProcess.waitForFinished(10);//200ms;
+    QProcess process;
+    process.setReadChannel(QProcess::StandardOutput);
+    process.start("adb", QStringList() << "wait-for-device" << "devices");
+    process.waitForFinished(1000); //200ms;
+    process.waitForReadyRead(1000);
     QStringList list;
     do {
-        if (!sProcess.canReadLine())
+        if (!process.canReadLine())
         {
             break;
         }
-        QString str = sProcess.readLine();
+        QString str = process.readLine();
 
         if (str.contains("List of devices"))
         {
@@ -164,11 +165,12 @@ QStringList adb_online::checkDevices() {
         if (idx != -1) {
             list << str.mid(0, idx).trimmed();
         }
-        //qDebug() << str;
+        qDebug() << str;
     } while (true);
     qDebug() << list;
-    sProcess.kill();
-    sProcess.waitForFinished();
+    process.kill();
+    process.waitForFinished();
+    process.destroyed();
     return list;
 }
 
