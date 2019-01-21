@@ -44,11 +44,15 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(mpLineDialog, SIGNAL(sendLineNumber(int)),
                      this, SLOT(selectLine(int)));
     ui->android_stop_btn->setEnabled(false);
+
     ui->msg_combobox->setCompleter(nullptr);
+    ui->msg_combobox->setMaxCount(100);
+    LogFilterMsgHistory::getInstance()->SetMaxCount(100);
 
-    QStringList msglist = LogFilterMsgHistory::getInstance()->GetValue();
-
+    ui->msg_combobox->setAutoCompletion(true);
+    QStringList msglist = LogFilterMsgHistory::getInstance()->GetValues();
     ui->msg_combobox->insertItems(0, msglist);
+
     this->setWindowTitle(mWindowTitle);
     QWidget::showMaximized();
 

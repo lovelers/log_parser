@@ -75,11 +75,11 @@ int LogFilterMsgHistory::Append(QStringList msgList)
             QString jval        = file.readAll();
             QJsonDocument jdoc  = QJsonDocument::fromJson(jval.toUtf8());
             QJsonObject jobj    = jdoc.object();
-            QVariantList jlist  = jobj["msg"].toArray().toVariantList();
+            QVariantList jlist;
 
+            jlist.clear();
             foreach(const QString &msg, msgList)
             {
-                jlist.removeAll(QVariant(msg));
                 if (jlist.size() < mMaxCount)
                 {
                     jlist.append(QVariant(msg));
@@ -100,7 +100,7 @@ int LogFilterMsgHistory::Append(QStringList msgList)
     }
 }
 
-QStringList LogFilterMsgHistory::GetValue()
+QStringList LogFilterMsgHistory::GetValues()
 {
     if (!IsFileAvaiable())
     {

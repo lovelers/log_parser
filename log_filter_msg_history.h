@@ -30,7 +30,7 @@ public:
     }
 
     int         Append(QStringList msgList);
-    QStringList GetValue();
+    QStringList GetValues();
     int         SetMaxCount(int count);
 
     bool inline IsFileAvaiable()
